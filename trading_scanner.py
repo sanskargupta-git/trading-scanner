@@ -14,11 +14,13 @@ except ImportError:
 
 app = Flask(__name__)
 
-# Initialize Gemini Client with your API Key
+# Initialize Gemini Client with API Key from environment
 gemini_client = None
 try:
     if genai:
-        gemini_client = genai.Client(api_key="AQ.Ab8RN6KjbYOc2SwKTrLYkvrx3EH9RUglyFKE6vq9pkURcZmUHw")
+        api_key = os.environ.get('GEMINI_API_KEY')
+        if api_key:
+            gemini_client = genai.Client(api_key=api_key)
 except Exception:
     gemini_client = None
 
