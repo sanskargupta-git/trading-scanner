@@ -6,6 +6,7 @@ from datetime import datetime
 import pytz
 import os
 import re
+import time
 
 try:
     from google import genai
@@ -13,6 +14,7 @@ except ImportError:
     genai = None
 
 app = Flask(__name__)
+app.config['JSON_SORT_KEYS'] = False
 
 # Initialize Gemini Client with API Key from environment
 gemini_client = None
@@ -352,27 +354,99 @@ def get_currency_rate():
 def get_master_table_data():
     table_type = request.args.get('type', 'nifty50')
 
-    if table_type == 'nifty50':
-        stock_list = NIFTY50_STOCKS[:10]
+    if table_type == 'banknifty':
+        stock_list = BANKNIFTY_STOCKS
+    elif table_type == 'commodities':
+        stock_list = COMMODITIES_STOCKS
+    elif table_type == 'giftnifty':
+        stock_list = GIFTNIFTY_STOCKS
+    elif table_type == 'finnifty':
+        stock_list = FINNIFTY_STOCKS
     else:
-        stock_list = NIFTY50_STOCKS[:10]
+        stock_list = NIFTY50_STOCKS
 
     rows = []
+    up_count = 0
+    down_count = 0
+
     for sym in stock_list:
         try:
             ticker_sym = get_ticker_symbol(sym)
-            df = fetch_stock_data(ticker_sym)
-            if df is None:
-                rows.append(f"<tr><td class='symbol-col'>{sym}</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>")
+            stock = yf.Ticker(ticker_sym, timeout=5)
+
+            df = stock.history(period="5d", interval="1d", timeout=5)
+            if df.empty or len(df) < 2:
+                rows.append(f"<tr><td class='symbol-col'>{sym}</td><td colspan='11'>--</td></tr>")
                 continue
 
             curr_price = round(float(df['Close'].iloc[-1]), 2)
-            row_html = f"<tr><td class='symbol-col'>{sym} (₹{curr_price})</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>"
+            prev_price = round(float(df['Close'].iloc[-2]), 2)
+            daily_pct = round(((curr_price - prev_price) / prev_price) * 100, 2)
+
+            pct_color = "text-success" if daily_pct >= 0 else "text-danger"
+            pct_sign = "+" if daily_pct >= 0 else ""
+
+            # Fetch intraday data for MACD
+            macd_status = "-"
+            try:
+                df_1h = stock.history(period="7d", interval="1h", timeout=5)
+                if not df_1h.empty and len(df_1h) >= 26:
+                    ema12 = df_1h['Close'].ewm(span=12, adjust=False).mean()
+                    ema26 = df_1h['Close'].ewm(span=26, adjust=False).mean()
+                    macd = ema12 - ema26
+                    signal = macd.ewm(span=9, adjust=False).mean()
+
+                    if macd.iloc[-1] > signal.iloc[-1]:
+                        macd_status = "<span class='badge-bull'>Bullish</span>"
+                        up_count += 1
+                    else:
+                        macd_status = "<span class='badge-bear'>Bearish</span>"
+                        down_count += 1
+            except:
+                pass
+
+            row_html = f"""
+            <tr>
+                <td class='symbol-col'>
+                    <span onclick="scanStock('{sym}')" class='symbol-link'>{sym}</span>
+                    <div style='font-size: 0.75rem; margin-top: 2px;'>
+                        <span class='fw-bold text-success'>₹{curr_price}</span>
+                        <span class='{pct_color} fw-bold'> {pct_sign}{daily_pct}%</span>
+                    </div>
+                </td>
+                <td>{macd_status}</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>
+                    <select class='chart-select' onchange='openChart(this, "{sym}")' style='font-size: 0.7rem;'>
+                        <option value=''>Chart</option>
+                        <option value='tradingview'>TV</option>
+                        <option value='groww'>Groww</option>
+                    </select>
+                </td>
+            </tr>
+            """
             rows.append(row_html)
         except Exception as e:
-            rows.append(f"<tr><td class='symbol-col'>{sym}</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>")
+            rows.append(f"<tr><td class='symbol-col'>{sym}</td><td colspan='11'>Error loading</td></tr>")
+            continue
 
-    return jsonify({"rows": rows, "stats": {"up_count": 0, "down_count": 0, "up_pct": 0, "down_pct": 0}})
+    total = up_count + down_count
+    stats = {
+        "up_count": up_count,
+        "down_count": down_count,
+        "up_pct": round((up_count / total * 100), 1) if total > 0 else 0,
+        "down_pct": round((down_count / total * 100), 1) if total > 0 else 0
+    }
+
+    return jsonify({"rows": rows, "stats": stats})
 
 @app.route('/get_signals')
 def get_signals():
