@@ -218,7 +218,7 @@ def get_master_table_data():
     for sym in stock_list:
         try:
             ticker_sym = get_ticker_symbol(sym)
-            stock = yf.Ticker(ticker_sym, timeout=10)
+            stock = yf.Ticker(ticker_sym)
             df = stock.history(period="5d", interval="1d")
 
             if df.empty or len(df) < 2:
