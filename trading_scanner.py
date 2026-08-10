@@ -320,6 +320,21 @@ def format_ist_time(raw_time):
     except:
         return str(raw_time)
 
+def fetch_stock_data(ticker_sym, retries=3):
+    for attempt in range(retries):
+        try:
+            stock = yf.Ticker(ticker_sym, timeout=10)
+            df = stock.history(period="5d", interval="1d")
+            if df.empty or len(df) < 1:
+                return None
+            return df
+        except Exception as e:
+            if attempt == retries - 1:
+                return None
+            import time
+            time.sleep(0.5 * (attempt + 1))
+    return None
+
 @app.route('/')
 def home():
     return render_template_string(HTML_PAGE)
@@ -346,16 +361,16 @@ def get_master_table_data():
     for sym in stock_list:
         try:
             ticker_sym = get_ticker_symbol(sym)
-            stock = yf.Ticker(ticker_sym)
-            df = stock.history(period="5d", interval="1d")
-            if df.empty or len(df) < 1:
+            df = fetch_stock_data(ticker_sym)
+            if df is None:
+                rows.append(f"<tr><td class='symbol-col'>{sym}</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>")
                 continue
 
             curr_price = round(float(df['Close'].iloc[-1]), 2)
             row_html = f"<tr><td class='symbol-col'>{sym} (₹{curr_price})</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>"
             rows.append(row_html)
-        except:
-            continue
+        except Exception as e:
+            rows.append(f"<tr><td class='symbol-col'>{sym}</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>")
 
     return jsonify({"rows": rows, "stats": {"up_count": 0, "down_count": 0, "up_pct": 0, "down_pct": 0}})
 
@@ -364,11 +379,17 @@ def get_signals():
     symbol = request.args.get('symbol', 'RELIANCE')
     try:
         ticker_symbol = get_ticker_symbol(symbol)
-        stock = yf.Ticker(ticker_symbol)
 
-        df = stock.history(period="60d", interval="1d")
-        if df.empty or len(df) < 10:
-            return jsonify({"error": "Insufficient data"})
+        for attempt in range(3):
+            try:
+                stock = yf.Ticker(ticker_symbol, timeout=10)
+                df = stock.history(period="60d", interval="1d")
+                if df.empty or len(df) < 10:
+                    return jsonify({"error": "Insufficient data"})
+                break
+            except:
+                if attempt == 2:
+                    return jsonify({"error": "Failed to fetch data"})
 
         current_price = round(df['Close'].iloc[-1], 2)
         df['EMA_20'] = df['Close'].ewm(span=20, adjust=False).mean()
