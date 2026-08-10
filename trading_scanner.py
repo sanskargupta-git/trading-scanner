@@ -422,51 +422,23 @@ def get_master_table_data():
     down_count = 0
 
     for sym in stock_list:
-        if sym in LIVE_DATA:
-            data = LIVE_DATA[sym]
-            curr_price = data["price"]
-            daily_pct = data["pct"]
-            macd = data["macd"]
+        data = LIVE_DATA.get(sym, {"price": 0, "pct": 0, "macd": "Neutral"})
+        curr_price = data["price"]
+        daily_pct = data["pct"]
+        macd = data["macd"]
 
-            pct_color = "text-success" if daily_pct >= 0 else "text-danger"
-            pct_sign = "+" if daily_pct >= 0 else ""
+        pct_color = "text-success" if daily_pct >= 0 else "text-danger"
+        pct_sign = "+" if daily_pct >= 0 else ""
 
-            macd_badge = f"<span class='badge-bull'>✓ {macd}</span>" if macd == "Bullish" else f"<span class='badge-bear'>✗ {macd}</span>"
+        macd_badge = f"<span class='badge-bull'>✓ {macd}</span>" if macd == "Bullish" else f"<span class='badge-bear'>✗ {macd}</span>"
 
-            if macd == "Bullish":
-                up_count += 1
-            else:
-                down_count += 1
+        if macd == "Bullish":
+            up_count += 1
+        else:
+            down_count += 1
 
-            row_html = f"""
-            <tr>
-                <td class='symbol-col'>
-                    <span onclick="scanStock('{sym}')" class='symbol-link'>{sym}</span>
-                    <div style='font-size: 0.75rem; margin-top: 2px;'>
-                        <span class='fw-bold text-success'>₹{curr_price}</span>
-                        <span class='{pct_color} fw-bold'> {pct_sign}{daily_pct}%</span>
-                    </div>
-                </td>
-                <td>-</td>
-                <td>{macd_badge}</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>
-                    <select class='chart-select' onchange='openChart(this, "{sym}")' style='font-size: 0.7rem;'>
-                        <option value=''>📊</option>
-                        <option value='tradingview'>TV</option>
-                        <option value='groww'>Groww</option>
-                    </select>
-                </td>
-            </tr>
-            """
-            rows.append(row_html)
+        row_html = f"<tr><td class='symbol-col'><span onclick=\"scanStock('{sym}')\" class='symbol-link'>{sym}</span><div style='font-size: 0.75rem; margin-top: 2px;'><span class='fw-bold text-success'>₹{curr_price}</span><span class='{pct_color} fw-bold'> {pct_sign}{daily_pct}%</span></div></td><td>-</td><td>{macd_badge}</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td><select class='chart-select' onchange='openChart(this, \"{sym}\")' style='font-size: 0.7rem;'><option value=''>📊</option><option value='tradingview'>TV</option><option value='groww'>Groww</option></select></td></tr>"
+        rows.append(row_html)
 
     total = up_count + down_count
     stats = {
