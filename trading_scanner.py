@@ -6,16 +6,19 @@ from datetime import datetime
 import pytz
 import os
 import re
-from google import genai
 
-app = Flask(__name__)
-
-# Initialize Gemini Client with API Key from environment
+# Optional: Gemini integration (non-blocking)
+gemini_client = None
 try:
+    from google import genai
     api_key = os.environ.get('GEMINI_API_KEY', "AQ.Ab8RN6KjbYOc2SwKTrLYkvrx3EH9RUglyFKE6vq9pkURcZmUHw")
     gemini_client = genai.Client(api_key=api_key)
+except ImportError:
+    pass
 except Exception:
-    gemini_client = None
+    pass
+
+app = Flask(__name__)
 
 NIFTY50_STOCKS = [
     "RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "INFY", "HINDUNILVR", "ITC", "SBIN", "BHARTIARTL", "LTIM",
