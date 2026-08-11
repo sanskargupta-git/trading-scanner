@@ -198,6 +198,10 @@ def get_ticker_symbol(query):
     elif query.endswith(".NS") or query.startswith("^") or query.endswith("=X"): return query
     else: return query + ".NS"
 
+@app.route('/version')
+def version():
+    return jsonify({"version": "v1.5-daily-macd"})
+
 @app.route('/')
 def home():
     return render_template_string(HTML_PAGE)
