@@ -246,8 +246,8 @@ def get_master_table_data():
                     else:
                         macd_status = "<span class='badge-bear'>✗ Bearish</span>"
                         down_count += 1
-            except:
-                pass
+            except Exception as macd_err:
+                app.logger.error(f"MACD failed for {sym}: {type(macd_err).__name__}: {macd_err}")
 
             row_html = f"<tr><td class='symbol-col'><span class='symbol-link' onclick=\"document.getElementById('stockSymbol').value='{sym}'; scanStock();\">{sym}</span><br><span style='font-size:0.75rem;'><span class='fw-bold text-success'>₹{curr_price}</span> <span class='{pct_color} fw-bold'>{pct_sign}{daily_pct}%</span></span></td><td>{macd_status}</td><td><select class='chart-select' onchange='openChart(\"{sym}\", this.value)'><option value=''>📊</option><option value='tv'>TradingView</option><option value='groww'>Groww</option></select></td></tr>"
             rows.append(row_html)
