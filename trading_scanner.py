@@ -224,7 +224,7 @@ def get_master_table_data():
         try:
             ticker_sym = get_ticker_symbol(sym)
             stock = yf.Ticker(ticker_sym)
-            df = stock.history(period="5d", interval="1d")
+            df = stock.history(period="60d", interval="1d")
 
             if df.empty or len(df) < 2:
                 rows.append(f"<tr><td class='symbol-col'>{sym}</td><td>--</td><td><select class='chart-select' onchange='openChart(\"{sym}\", this.value)'><option value=''>📊</option><option value='tv'>TradingView</option><option value='groww'>Groww</option></select></td></tr>")
@@ -238,10 +238,9 @@ def get_master_table_data():
 
             macd_status = "--"
             try:
-                df_macd = stock.history(period="60d", interval="1d")
-                if not df_macd.empty and len(df_macd) >= 26:
-                    ema12 = df_macd['Close'].ewm(span=12, adjust=False).mean()
-                    ema26 = df_macd['Close'].ewm(span=26, adjust=False).mean()
+                if len(df) >= 26:
+                    ema12 = df['Close'].ewm(span=12, adjust=False).mean()
+                    ema26 = df['Close'].ewm(span=26, adjust=False).mean()
                     macd = ema12 - ema26
                     signal = macd.ewm(span=9, adjust=False).mean()
 
