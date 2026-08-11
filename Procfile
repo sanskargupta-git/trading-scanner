@@ -1,1 +1,1 @@
-web: python trading_scanner.py
+web: gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 1 --threads 8 --timeout 120 --access-logfile - trading_scanner:app
