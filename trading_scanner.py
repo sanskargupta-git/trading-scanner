@@ -19,6 +19,7 @@ except Exception:
     pass
 
 app = Flask(__name__)
+app.config['VERSION'] = "v1.5-daily-macd"
 
 NIFTY50_STOCKS = [
     "RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "INFY", "HINDUNILVR", "ITC", "SBIN", "BHARTIARTL", "LTIM",
