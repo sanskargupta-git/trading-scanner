@@ -233,10 +233,10 @@ def get_master_table_data():
 
             macd_status = "--"
             try:
-                df_1h = stock.history(period="7d", interval="1h")
-                if not df_1h.empty and len(df_1h) >= 26:
-                    ema12 = df_1h['Close'].ewm(span=12, adjust=False).mean()
-                    ema26 = df_1h['Close'].ewm(span=26, adjust=False).mean()
+                df_macd = stock.history(period="60d", interval="1d")
+                if not df_macd.empty and len(df_macd) >= 26:
+                    ema12 = df_macd['Close'].ewm(span=12, adjust=False).mean()
+                    ema26 = df_macd['Close'].ewm(span=26, adjust=False).mean()
                     macd = ema12 - ema26
                     signal = macd.ewm(span=9, adjust=False).mean()
 
