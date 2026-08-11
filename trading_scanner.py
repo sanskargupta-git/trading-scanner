@@ -347,17 +347,17 @@ def render_row(m, table_type, inr_rate):
             </div>
             {daily_html}
         </td>
-        <td>{m['big_candle']}</td>
-        <td>{m['macd']}</td>
-        <td>{m['dow']}</td>
-        <td>{m['ema']}</td>
-        <td>{m['bb']}</td>
-        <td>{m['rsi_val']}</td>
-        <td>{m['rsi_status']}</td>
-        <td>{m['dmi']}</td>
-        <td>{m['adx_val']}</td>
-        <td>{m['adx_trend']}</td>
-        <td>
+        <td data-label="Big Candle">{m['big_candle']}</td>
+        <td data-label="MACD 1H">{m['macd']}</td>
+        <td data-label="DOW 15M">{m['dow']}</td>
+        <td data-label="EMA 5M">{m['ema']}</td>
+        <td data-label="Bollinger">{m['bb']}</td>
+        <td data-label="RSI">{m['rsi_val']}</td>
+        <td data-label="RSI Trend">{m['rsi_status']}</td>
+        <td data-label="DMI">{m['dmi']}</td>
+        <td data-label="ADX">{m['adx_val']}</td>
+        <td data-label="ADX Trend">{m['adx_trend']}</td>
+        <td class="chart-col">
             <select class="chart-select" onchange="openChart(this, '{sym}')">
                 <option value="" selected disabled>Select Chart</option>
                 <option value="tradingview">TradingView</option>
@@ -490,6 +490,7 @@ HTML_PAGE = """
             --table-head-bg: #1a202c;
             --section-border: #2d3748;
             --row-hover-bg: #1e293b;
+            --muted-color: #94a3b8;
         }
 
         :root[data-theme="light"] {
@@ -503,7 +504,12 @@ HTML_PAGE = """
             --table-head-bg: #e2e8f0;
             --section-border: #94a3b8;
             --row-hover-bg: #e0f2fe;
+            --muted-color: #64748b;
         }
+
+        /* Bootstrap's default muted grey is close to unreadable on the dark canvas. */
+        .text-muted { color: var(--muted-color) !important; }
+        .form-control::placeholder { color: var(--muted-color); opacity: 0.8; }
 
         body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: background 0.3s, color 0.3s; }
 
@@ -665,13 +671,84 @@ HTML_PAGE = """
         .msg-user { background: #2563eb; color: white; align-self: flex-end; }
         .msg-gemini { background: var(--border-color); color: var(--text-color); align-self: flex-start; }
 
+        .mobile-only { display: none; }
+        .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 99; }
+
         @media (max-width: 900px) {
-            .sidebar { width: 100%; height: auto; position: relative; }
-            .main-content, .main-content.expanded { margin-left: 0; padding: 15px; }
+            body { overflow-x: hidden; -webkit-text-size-adjust: 100%; }
+            .mobile-only { display: block; }
+            .sidebar-backdrop.show { display: block; }
+
+            /* Sidebar becomes an off-canvas drawer instead of a permanent column. */
+            .sidebar { width: 84vw; max-width: 330px; padding: 15px; transform: translateX(-102%); transition: transform 0.28s ease; box-shadow: 6px 0 24px rgba(0,0,0,0.45); }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .sidebar .sidebar-toggle-btn { display: none; }
+            /* The desktop "collapsed" rules must not shrink or blank the drawer. */
+            .sidebar.collapsed { width: 84vw; max-width: 330px; padding: 15px; }
+            .sidebar.collapsed .watchlist-scroll-container,
+            .sidebar.collapsed .calc-panel-sidebar,
+            .sidebar.collapsed h5,
+            .sidebar.collapsed .input-group { display: block !important; }
+
+            .main-content, .main-content.expanded { margin-left: 0; padding: 14px 12px; }
+
+            .menu-btn { width: 100%; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-color); padding: 10px; border-radius: 10px; font-weight: bold; font-size: 0.85rem; cursor: pointer; }
+            .top-nav { flex-direction: column; align-items: stretch; gap: 10px; overflow: visible; }
+            .broker-row { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+            .nav-right { flex-direction: column; align-items: stretch !important; }
+            .nav-right > div:last-child { display: flex; gap: 8px; align-items: center; }
+            .theme-toggle-btn { margin-bottom: 0; flex: 1; }
+            .global-timer-badge { width: auto; padding: 7px 14px; }
+
+            /* The inline flex heading crams the stats badge onto the title line. */
+            .table-heading { display: block !important; font-size: 1.02rem; line-height: 1.5; }
+            .table-heading .stats-badge { display: block; font-size: 0.76rem !important; margin: 4px 0 0 0 !important; }
+            .table-subtitle { display: none; }
+            .live-widget-box { flex-wrap: wrap; justify-content: center; font-size: 0.72rem; }
+            .theme-toggle-btn, .global-timer-badge { font-size: 0.72rem; }
+
+            h2.fw-bold { font-size: 1.3rem; }
+            .ticker-wrapper-outer { padding: 10px; }
+            .ticker-ribbon { font-size: 0.72rem; padding: 5px 14px; }
+            .card { margin-bottom: 14px; }
+
+            /* Twelve columns cannot fit a phone, so each row becomes a stacked card. */
+            .master-table-wrapper { max-height: 68vh; overflow-x: hidden; }
+            .master-table thead { display: none; }
+            .master-table, .master-table tbody { display: block; width: 100%; }
+            .master-table tbody tr {
+                display: grid; grid-template-columns: 1fr 1fr;
+                border: 1px solid var(--section-border); border-radius: 10px;
+                margin-bottom: 10px; background: var(--card-bg); overflow: hidden;
+            }
+            .master-table tbody tr:hover { transform: none; box-shadow: none; background: var(--card-bg) !important; }
+            .master-table td {
+                border: none; border-top: 1px solid var(--section-border);
+                display: flex; align-items: center; justify-content: space-between;
+                gap: 8px; padding: 8px 10px; font-size: 0.78rem; white-space: normal;
+            }
+            .master-table td::before { content: attr(data-label); color: #94a3b8; font-size: 0.68rem; font-weight: 600; text-align: left; }
+            .master-table td:nth-child(even):not(.chart-col) { border-right: 1px solid var(--section-border); }
+
+            .master-table td.symbol-col {
+                grid-column: 1 / -1; position: static; display: block;
+                border-top: none; background: var(--table-head-bg); padding: 10px;
+            }
+            .master-table td.chart-col { grid-column: 1 / -1; }
+            .master-table td.symbol-col::before,
+            .master-table td.chart-col::before,
+            .master-table td.loading-cell::before { content: none; }
+            .master-table td.chart-col .chart-select { width: 100%; padding: 8px; font-size: 0.8rem; }
+            .master-table td.loading-cell { grid-column: 1 / -1; display: block; text-align: center; border-top: none; }
+
+            .gemini-chat-window { width: auto; left: 12px; right: 12px; height: 62vh; bottom: 78px; }
+            .gemini-chat-btn { bottom: 16px; right: 16px; }
         }
     </style>
 </head>
 <body>
+
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeMobileSidebar()"></div>
 
 <div class="sidebar shadow-sm" id="sidebarContainer">
     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -735,7 +812,8 @@ HTML_PAGE = """
     <div class="container-fluid">
 
         <div class="top-nav">
-            <div class="d-flex gap-2 overflow-x-auto align-items-center">
+            <button class="menu-btn mobile-only" onclick="toggleSidebar()">☰ &nbsp;Watchlist &amp; Option Calculator</button>
+            <div class="d-flex gap-2 overflow-x-auto align-items-center broker-row">
                 <a href="https://in.tradingview.com" target="_blank" class="broker-btn">TradingView</a>
                 <a href="https://groww.in" target="_blank" class="broker-btn">Groww</a>
                 <a href="https://kite.zerodha.com" target="_blank" class="broker-btn">Kite</a>
@@ -743,7 +821,7 @@ HTML_PAGE = """
                 <a href="https://upstox.com" target="_blank" class="broker-btn">Upstox</a>
             </div>
 
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2 nav-right">
                 <div class="live-widget-box" onclick="openGlobalModal()" title="Click to view Global Markets Time &amp; Currencies">
                     <span class="flag-wave">🇮🇳</span>
                     <span id="liveClockDisplay" class="fw-bold text-info">--:--:--</span>
@@ -896,11 +974,11 @@ HTML_PAGE = """
             <div class="col-md-12">
                 <div class="card p-3 shadow-sm">
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                        <h5 class="fw-bold text-info mb-0" style="cursor: pointer; display: flex; align-items: center; gap: 8px;" onclick="toggleTable('niftyTableWrapper', 'niftyToggleIcon')">
+                        <h5 class="fw-bold text-info mb-0 table-heading" style="cursor: pointer; display: flex; align-items: center; gap: 8px;" onclick="toggleTable('niftyTableWrapper', 'niftyToggleIcon')">
                             <span id="niftyToggleIcon">▼</span> <span>📈 Nifty 50 Stocks Live Market</span>
-                            <span id="niftyStatsBadge" class="fs-6 fw-normal text-warning ms-1"></span>
+                            <span id="niftyStatsBadge" class="fs-6 fw-normal text-warning ms-1 stats-badge"></span>
                         </h5>
-                        <span class="fs-7 text-muted">Master Unified Dashboard Table (All 50 Companies)</span>
+                        <span class="fs-7 text-muted table-subtitle">Master Unified Dashboard Table (All 50 Companies)</span>
                     </div>
 
                     <div class="master-table-wrapper" id="niftyTableWrapper">
@@ -934,11 +1012,11 @@ HTML_PAGE = """
             <div class="col-md-12">
                 <div class="card p-3 shadow-sm">
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                        <h5 class="fw-bold text-info mb-0" style="cursor: pointer; display: flex; align-items: center; gap: 8px;" onclick="toggleTable('bankNiftyTableWrapper', 'bankNiftyToggleIcon')">
+                        <h5 class="fw-bold text-info mb-0 table-heading" style="cursor: pointer; display: flex; align-items: center; gap: 8px;" onclick="toggleTable('bankNiftyTableWrapper', 'bankNiftyToggleIcon')">
                             <span id="bankNiftyToggleIcon">▼</span> <span>🏦 Bank Nifty Stocks Live Market</span>
-                            <span id="bankNiftyStatsBadge" class="fs-6 fw-normal text-warning ms-1"></span>
+                            <span id="bankNiftyStatsBadge" class="fs-6 fw-normal text-warning ms-1 stats-badge"></span>
                         </h5>
-                        <span class="fs-7 text-muted">Banking Sector Dashboard Table</span>
+                        <span class="fs-7 text-muted table-subtitle">Banking Sector Dashboard Table</span>
                     </div>
 
                     <div class="master-table-wrapper" id="bankNiftyTableWrapper">
@@ -972,11 +1050,11 @@ HTML_PAGE = """
             <div class="col-md-12">
                 <div class="card p-3 shadow-sm">
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                        <h5 class="fw-bold text-info mb-0" style="cursor: pointer; display: flex; align-items: center; gap: 8px;" onclick="toggleTable('commoditiesTableWrapper', 'commoditiesToggleIcon')">
+                        <h5 class="fw-bold text-info mb-0 table-heading" style="cursor: pointer; display: flex; align-items: center; gap: 8px;" onclick="toggleTable('commoditiesTableWrapper', 'commoditiesToggleIcon')">
                             <span id="commoditiesToggleIcon">▼</span> <span>🛢️ Commodities Live Market</span>
-                            <span id="commoditiesStatsBadge" class="fs-6 fw-normal text-warning ms-1"></span>
+                            <span id="commoditiesStatsBadge" class="fs-6 fw-normal text-warning ms-1 stats-badge"></span>
                         </h5>
-                        <span class="fs-7 text-muted">MCX Commodities Sector Dashboard Table</span>
+                        <span class="fs-7 text-muted table-subtitle">MCX Commodities Sector Dashboard Table</span>
                     </div>
 
                     <div class="master-table-wrapper" id="commoditiesTableWrapper">
@@ -1010,11 +1088,11 @@ HTML_PAGE = """
             <div class="col-md-12">
                 <div class="card p-3 shadow-sm">
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                        <h5 class="fw-bold text-info mb-0" style="cursor: pointer; display: flex; align-items: center; gap: 8px;" onclick="toggleTable('giftNiftyTableWrapper', 'giftNiftyToggleIcon')">
+                        <h5 class="fw-bold text-info mb-0 table-heading" style="cursor: pointer; display: flex; align-items: center; gap: 8px;" onclick="toggleTable('giftNiftyTableWrapper', 'giftNiftyToggleIcon')">
                             <span id="giftNiftyToggleIcon">▼</span> <span>🌍 Gift Nifty &amp; Key Sectors</span>
-                            <span id="giftNiftyStatsBadge" class="fs-6 fw-normal text-warning ms-1"></span>
+                            <span id="giftNiftyStatsBadge" class="fs-6 fw-normal text-warning ms-1 stats-badge"></span>
                         </h5>
-                        <span class="fs-7 text-muted">Gift Nifty Dashboard Table</span>
+                        <span class="fs-7 text-muted table-subtitle">Gift Nifty Dashboard Table</span>
                     </div>
 
                     <div class="master-table-wrapper" id="giftNiftyTableWrapper">
@@ -1048,11 +1126,11 @@ HTML_PAGE = """
             <div class="col-md-12">
                 <div class="card p-3 shadow-sm">
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                        <h5 class="fw-bold text-info mb-0" style="cursor: pointer; display: flex; align-items: center; gap: 8px;" onclick="toggleTable('finNiftyTableWrapper', 'finNiftyToggleIcon')">
+                        <h5 class="fw-bold text-info mb-0 table-heading" style="cursor: pointer; display: flex; align-items: center; gap: 8px;" onclick="toggleTable('finNiftyTableWrapper', 'finNiftyToggleIcon')">
                             <span id="finNiftyToggleIcon">▼</span> <span>💳 Fin Nifty Stocks Live Market</span>
-                            <span id="finNiftyStatsBadge" class="fs-6 fw-normal text-warning ms-1"></span>
+                            <span id="finNiftyStatsBadge" class="fs-6 fw-normal text-warning ms-1 stats-badge"></span>
                         </h5>
-                        <span class="fs-7 text-muted">Financial Sector Dashboard Table</span>
+                        <span class="fs-7 text-muted table-subtitle">Financial Sector Dashboard Table</span>
                     </div>
 
                     <div class="master-table-wrapper" id="finNiftyTableWrapper">
@@ -1141,6 +1219,15 @@ window.addEventListener('DOMContentLoaded', () => {
     renderWatchlist();
     fetchAllTables();
     fetchCurrencies();
+
+    // Five card-stacked tables make for an endless page on a phone, so only the
+    // headline Nifty 50 table stays open; the rest are one tap away.
+    if (isMobile()) {
+        [['bankNiftyTableWrapper','bankNiftyToggleIcon'],
+         ['commoditiesTableWrapper','commoditiesToggleIcon'],
+         ['giftNiftyTableWrapper','giftNiftyToggleIcon'],
+         ['finNiftyTableWrapper','finNiftyToggleIcon']].forEach(p => toggleTable(p[0], p[1]));
+    }
 
     setInterval(() => {
         let now = new Date();
@@ -1374,8 +1461,25 @@ function updateGauge(trend, score) {
     }
 }
 
+function isMobile() {
+    return window.matchMedia('(max-width: 900px)').matches;
+}
+
+function closeMobileSidebar() {
+    document.getElementById('sidebarContainer').classList.remove('mobile-open');
+    document.getElementById('sidebarBackdrop').classList.remove('show');
+}
+
 function toggleSidebar() {
     let sidebar = document.getElementById('sidebarContainer');
+
+    // On a phone the sidebar is an off-canvas drawer, not a shrinkable column.
+    if (isMobile()) {
+        let open = sidebar.classList.toggle('mobile-open');
+        document.getElementById('sidebarBackdrop').classList.toggle('show', open);
+        return;
+    }
+
     let mainContent = document.getElementById('mainContentContainer');
     let toggleBtn = document.querySelector('.sidebar-toggle-btn');
 
@@ -1384,6 +1488,8 @@ function toggleSidebar() {
 
     toggleBtn.innerHTML = sidebar.classList.contains('collapsed') ? '&raquo;' : '&laquo;';
 }
+
+window.addEventListener('resize', () => { if (!isMobile()) closeMobileSidebar(); });
 
 function toggleOptionCalculator() {
     let body = document.getElementById('optionCalcBody');
@@ -1512,13 +1618,15 @@ async function scanStock(presetSymbol = null) {
     document.getElementById('stockSymbol').value = inputVal;
     let timeframe = document.getElementById('timeframeSelect').value;
 
-    let sidebar = document.getElementById('sidebarContainer');
-    let mainContent = document.getElementById('mainContentContainer');
-    let toggleBtn = document.querySelector('.sidebar-toggle-btn');
-    if(!sidebar.classList.contains('collapsed')) {
-        sidebar.classList.add('collapsed');
-        mainContent.classList.add('expanded');
-        toggleBtn.innerHTML = '&raquo;';
+    if (isMobile()) {
+        closeMobileSidebar();
+    } else {
+        let sidebar = document.getElementById('sidebarContainer');
+        if(!sidebar.classList.contains('collapsed')) {
+            sidebar.classList.add('collapsed');
+            document.getElementById('mainContentContainer').classList.add('expanded');
+            document.querySelector('.sidebar-toggle-btn').innerHTML = '&raquo;';
+        }
     }
 
     try {
