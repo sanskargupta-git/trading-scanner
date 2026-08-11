@@ -683,6 +683,8 @@ HTML_PAGE = """
             .sidebar { width: 84vw; max-width: 330px; padding: 15px; transform: translateX(-102%); transition: transform 0.28s ease; box-shadow: 6px 0 24px rgba(0,0,0,0.45); }
             .sidebar.mobile-open { transform: translateX(0); }
             .sidebar .sidebar-toggle-btn { display: none; }
+            /* The drawer is full height, so the desktop 250px cap wastes most of it. */
+            .watchlist-scroll-container { max-height: 52vh; }
             /* The desktop "collapsed" rules must not shrink or blank the drawer. */
             .sidebar.collapsed { width: 84vw; max-width: 330px; padding: 15px; }
             .sidebar.collapsed .watchlist-scroll-container,
