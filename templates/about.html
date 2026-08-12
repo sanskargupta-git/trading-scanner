@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}About · Ultimate Pro Trading Scanner{% endblock %}
+
+{% block content %}
+<div class="text-center mb-3">
+    <h2 class="fw-bold text-info">ABOUT THIS SCANNER</h2>
+    <p class="text-muted small">What each column means and where the numbers come from.</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="card p-4 shadow-sm">
+            <h5 class="fw-bold text-info">Indicators</h5>
+            <table class="table table-sm align-middle" style="color: var(--text-color);">
+                <tbody>
+                    <tr><td style="width:170px;"><b>🔥 Big Candle</b> <span class="text-muted d-block" style="font-size:0.72rem;">15 min</span></td>
+                        <td>Flags a bar whose high-to-low range is at least 1.5× the average of the last 10 bars. Green when it closed above its open.</td></tr>
+                    <tr><td><b>⚡ MACD</b> <span class="text-muted d-block" style="font-size:0.72rem;">1 hour</span></td>
+                        <td>12/26 EMA difference against its own 9-period signal line. Bullish while MACD sits above the signal.</td></tr>
+                    <tr><td><b>📈 DOW Breakout</b> <span class="text-muted d-block" style="font-size:0.72rem;">15 min</span></td>
+                        <td>BUY when price clears the highest high of the previous six bars, SELL when it breaks the lowest low.</td></tr>
+                    <tr><td><b>⚔️ EMA Crossover</b> <span class="text-muted d-block" style="font-size:0.72rem;">5 min</span></td>
+                        <td>Golden while the 20 EMA is above the 50 EMA, Death when it is below.</td></tr>
+                    <tr><td><b>📊 Bollinger Band</b> <span class="text-muted d-block" style="font-size:0.72rem;">15 min</span></td>
+                        <td>Up when price reaches the upper band (20 SMA plus two standard deviations).</td></tr>
+                    <tr><td><b>📉 RSI</b> <span class="text-muted d-block" style="font-size:0.72rem;">15 min</span></td>
+                        <td>Classic 14-period Relative Strength Index. Below 30 is oversold, above 70 overbought. The trend column compares it with the previous bar.</td></tr>
+                    <tr><td><b>🎯 DMI / ADX</b> <span class="text-muted d-block" style="font-size:0.72rem;">15 min</span></td>
+                        <td>14-period directional movement. DMI is bullish while +DI leads −DI; ADX above 25 means the trend has real strength.</td></tr>
+                    <tr><td><b>Score</b> <span class="text-muted d-block" style="font-size:0.72rem;">Screener</span></td>
+                        <td>Bullish signals minus bearish ones across seven indicators, so it ranges from −7 to +7. Used to sort the screener.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card p-4 shadow-sm">
+            <h5 class="fw-bold text-info">Pages</h5>
+            <p class="mb-2"><b>Dashboard</b> — every tracked segment as a live table, plus a single-stock scan panel, watchlist and option calculator.</p>
+            <p class="mb-2"><b>Screener</b> — stack signal filters to shortlist setups, sort by strength, export the result.</p>
+            <p class="mb-0"><b>Heatmap</b> — the whole universe as coloured tiles, by daily move, signal score or RSI.</p>
+        </div>
+
+        <div class="card p-4 shadow-sm">
+            <h5 class="fw-bold text-info">How the data works</h5>
+            <p class="mb-2">Prices come from Yahoo Finance and are <b>delayed</b>, not a live exchange feed.</p>
+            <p class="mb-2">A background job refreshes all <b>{{ universe }}</b> symbols every <b>{{ refresh_seconds }} seconds</b> in one batch and caches the result, so pages load instantly and never wait on the data provider.</p>
+            <p class="mb-0">The badge in the top bar shows how old the current numbers are.</p>
+        </div>
+
+        <div class="card p-4 shadow-sm">
+            <h5 class="fw-bold text-warning">Disclaimer</h5>
+            <p class="mb-0 small">This dashboard is for education and research. It is not investment advice, not a recommendation to buy or sell, and the option calculator uses estimated premiums rather than real chain quotes. Verify everything with your broker before trading.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

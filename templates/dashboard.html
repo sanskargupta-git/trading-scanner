@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Ultimate Pro Trading Scanner{% endblock %}
+
+{% block sidebar %}
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeMobileSidebar()"></div>
+
+<div class="sidebar shadow-sm" id="sidebarContainer">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="fw-bold text-info mb-0">Scanner</h5>
+        <button class="sidebar-toggle-btn" onclick="toggleSidebar()">&laquo;</button>
+    </div>
+
+    <div class="input-group input-group-sm mb-2">
+        <input type="text" id="newStockInput" class="form-control" placeholder="Add Symbol">
+        <button class="btn btn-primary" onclick="addToWatchlist()">Add</button>
+    </div>
+
+    <div class="watchlist-scroll-container" id="watchlistContainer"></div>
+
+    <div class="calc-panel-sidebar">
+        <button class="btn btn-outline-info btn-sm w-100 fw-bold mb-2" onclick="toggleOptionCalculator()">Option Calculator</button>
+        <div id="optionCalcBody" style="display:none;">
+            <div id="activeStockLabel" class="text-muted fs-7 text-center mb-1">Select stock</div>
+            <div id="chainTableContainer" class="mb-2" style="max-height: 120px; overflow-y: auto; display:none;"></div>
+            <div class="mb-1">
+                <input type="text" id="selectedOptionName" class="form-control form-control-sm text-center fw-bold text-warning" readonly placeholder="Click strike">
+            </div>
+            <div class="row g-1 mb-1">
+                <div class="col-6">
+                    <select id="calcType" class="form-select form-select-sm">
+                        <option value="BUY">Buyer</option>
+                        <option value="SELL">Seller</option>
+                    </select>
+                </div>
+                <div class="col-6">
+                    <input type="number" id="calcLot" class="form-control form-control-sm text-center" placeholder="Lot">
+                </div>
+            </div>
+            <div class="row g-1 mb-1">
+                <div class="col-6">
+                    <input type="number" id="calcEntry" class="form-control form-control-sm text-center" placeholder="Entry Price">
+                </div>
+                <div class="col-6">
+                    <input type="number" id="calcPoints" class="form-control form-control-sm text-center" placeholder="Live (+/-)">
+                </div>
+            </div>
+            <button class="btn btn-success w-100 fw-bold py-1" style="font-size: 0.75rem;" onclick="calculateOption()">Calculate P&amp;L</button>
+
+            <div id="buyingPriceChapter" class="calc-chapter-box">
+                <div class="calc-chapter-title">🟢 Invest Money</div>
+                <div>Total Invested: <span id="chapterInvestedVal" class="fw-bold text-warning">--</span></div>
+            </div>
+
+            <div id="profitChapter" class="calc-chapter-box">
+                <div class="calc-chapter-title">💰 Profit / Loss</div>
+                <div class="text-center py-1">
+                    <span id="chapterResultText" class="fw-bold" style="font-size: 1.25rem; display: block;">--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block menubutton %}
+<button class="menu-btn mobile-only" onclick="toggleSidebar()">☰ &nbsp;Watchlist &amp; Option Calculator</button>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex gap-2 align-items-center broker-row mb-3">
+    <a href="https://in.tradingview.com" target="_blank" rel="noopener" class="broker-btn">TradingView</a>
+    <a href="https://groww.in" target="_blank" rel="noopener" class="broker-btn">Groww</a>
+    <a href="https://kite.zerodha.com" target="_blank" rel="noopener" class="broker-btn">Kite</a>
+    <a href="https://www.angelone.in" target="_blank" rel="noopener" class="broker-btn">Angel One</a>
+    <a href="https://upstox.com" target="_blank" rel="noopener" class="broker-btn">Upstox</a>
+</div>
+
+<div class="text-center mb-2">
+    <h2 class="fw-bold text-info">ULTIMATE PRO TRADING SCANNER</h2>
+    <p class="text-muted small">Advanced Live Market Multi-Indicator Analytics &amp; Breakout Dashboard</p>
+</div>
+
+<div class="ticker-wrapper-outer">
+    <div class="ticker-rope"></div>
+    <div class="ticker-wrapper-inner" id="tickerStrip">
+        <div class="ticker-item"><span class="ticker-ribbon ribbon-flat">Loading live movers...</span></div>
+    </div>
+</div>
+
+<div class="card p-3 shadow-sm mb-4">
+    <div class="row g-3 align-items-center">
+        <div class="col-md-5">
+            <label class="form-label fw-bold text-muted">Stock Symbol:</label>
+            <input type="text" id="stockSymbol" class="form-control" placeholder="e.g. RELIANCE">
+        </div>
+        <div class="col-md-5">
+            <label class="form-label fw-bold text-muted">Timeframe:</label>
+            <select id="timeframeSelect" class="form-select">
+                <option value="1d">Daily (1D)</option>
+                <option value="1h">Hourly (1H)</option>
+                <option value="15m" selected>15 Minutes (15M)</option>
+                <option value="5m">5 Minutes (5M)</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button class="btn btn-primary w-100 mt-2 fw-bold" onclick="scanStock()">Scan Stock</button>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="resultCard" style="display:none;">
+    <div class="col-md-7">
+        <div class="card p-4 shadow mb-4">
+            <h4 id="stockName" class="text-center text-info"></h4>
+            <hr style="border-color: var(--border-color);">
+            <div class="row text-center mb-3">
+                <div class="col-md-3">
+                    <p class="text-muted mb-1">Current Price</p>
+                    <h4 id="stockPrice" class="text-success fw-bold">0</h4>
+                </div>
+                <div class="col-md-3">
+                    <p class="text-muted mb-1">20 / 50 EMA</p>
+                    <h6 id="emaValues" class="text-primary fw-bold">-</h6>
+                </div>
+                <div class="col-md-3">
+                    <p class="text-muted mb-1">Swing High / Low</p>
+                    <h6 id="swingLevels" class="text-warning fw-bold">-</h6>
+                </div>
+                <div class="col-md-3">
+                    <p class="text-muted mb-1">Volume Status</p>
+                    <h4 id="volumeStatus" class="text-info">-</h4>
+                </div>
+            </div>
+            <div class="alert text-center mt-3 p-3 border-secondary" id="dowSignalBox" role="alert"></div>
+            <div class="alert text-center mt-2 p-3 border-secondary" id="emaSignalBox" role="alert"></div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card p-3 shadow mb-4" style="height: 380px;">
+            <div class="text-info px-1 pt-1 mb-1" style="font-size: 0.95rem;">
+                <span>📊 Stock Strength Gauge Meter</span>
+            </div>
+            <div class="gauge-container">
+                <div class="meter-arc">
+                    <div class="meter-needle" id="gaugeNeedle"></div>
+                    <div class="meter-pin"></div>
+                </div>
+                <h4 id="gaugeTitle" class="fw-bold mt-2 mb-1 text-success">--</h4>
+                <p id="gaugeDesc" class="text-muted small mb-0">Select a stock to evaluate trend strength.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% set panels = [
+    ('nifty50',     'niftyTable',       '📈 Nifty 50 Stocks Live Market',  'Master Unified Dashboard Table'),
+    ('banknifty',   'bankNiftyTable',   '🏦 Bank Nifty Stocks Live Market','Banking Sector Dashboard Table'),
+    ('commodities', 'commoditiesTable', '🛢️ Commodities Live Market',      'MCX Commodities Dashboard Table'),
+    ('giftnifty',   'giftNiftyTable',   '🌍 Gift Nifty &amp; Key Sectors', 'Index Dashboard Table'),
+    ('finnifty',    'finNiftyTable',    '💳 Fin Nifty Stocks Live Market', 'Financial Sector Dashboard Table')
+] %}
+
+{% for key, dom, heading, subtitle in panels %}
+<div class="card p-3 shadow-sm">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h5 class="fw-bold text-info mb-0 table-heading" style="cursor: pointer; display: flex; align-items: center; gap: 8px;"
+            onclick="toggleTable('{{ dom }}Wrapper', '{{ dom }}ToggleIcon')">
+            <span id="{{ dom }}ToggleIcon">▼</span> <span>{{ heading|safe }}</span>
+            <span id="{{ dom }}StatsBadge" class="fs-6 fw-normal text-warning ms-1 stats-badge"></span>
+        </h5>
+        <div class="d-flex align-items-center gap-2">
+            <span class="fs-7 text-muted table-subtitle">{{ subtitle }}</span>
+            <a class="broker-btn" href="/export.csv?type={{ key }}" title="Download this table as CSV">⬇ CSV</a>
+        </div>
+    </div>
+
+    {% if key == 'nifty50' %}
+    <input type="text" class="form-control form-control-sm mb-2" id="tableSearch"
+           placeholder="Filter symbols in this table…" oninput="filterNiftyTable(this.value)">
+    {% endif %}
+
+    <div class="master-table-wrapper" id="{{ dom }}Wrapper">
+        <table class="master-table">
+            <thead>
+                <tr>
+                    <th class="symbol-th" style="vertical-align: middle;">Stock</th>
+                    <th>🔥 Big Candle (15M)</th>
+                    <th>⚡ MACD Crossover (1H)</th>
+                    <th>📈 DOW Breakouts (15M)</th>
+                    <th>⚔️ EMA Crossover (5M)</th>
+                    <th>📊 Bollinger Band (15M)</th>
+                    <th>📉 RSI Value (15M)</th>
+                    <th>📉 RSI Status (15M)</th>
+                    <th>🎯 DMI Crossover</th>
+                    <th>🎯 ADX Value (15M)</th>
+                    <th>🎯 ADX Trend (15M)</th>
+                    <th style="vertical-align: middle;">📊 Select Chart</th>
+                </tr>
+            </thead>
+            <tbody id="{{ dom }}Body">
+                <tr><td colspan="12" class="text-center text-muted loading-cell">Loading live market data <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block scripts %}
+<script>window.LOT_SIZES = {{ lot_sizes|tojson }}; window.DEFAULT_WATCHLIST = {{ watchlist|tojson }};</script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

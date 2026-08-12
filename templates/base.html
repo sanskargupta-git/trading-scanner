@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Ultimate Pro Trading Scanner{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/app.css') }}" rel="stylesheet">
+</head>
+<body>
+
+{% block sidebar %}{% endblock %}
+
+<div class="main-content{% if not self.sidebar()|trim %} no-sidebar{% endif %}" id="mainContentContainer">
+    <div class="container-fluid">
+
+        <div class="top-nav">
+            {% block menubutton %}{% endblock %}
+
+            <nav class="page-nav">
+                <a href="/" class="page-link-btn {% if active == 'dashboard' %}active{% endif %}">Dashboard</a>
+                <a href="/screener" class="page-link-btn {% if active == 'screener' %}active{% endif %}">Screener</a>
+                <a href="/heatmap" class="page-link-btn {% if active == 'heatmap' %}active{% endif %}">Heatmap</a>
+                <a href="/about" class="page-link-btn {% if active == 'about' %}active{% endif %}">About</a>
+            </nav>
+
+            <div class="d-flex align-items-center gap-2 nav-right">
+                <div class="live-widget-box" onclick="openGlobalModal()" title="Global markets and currencies">
+                    <span class="flag-wave">🇮🇳</span>
+                    <span id="liveClockDisplay" class="fw-bold text-info">--:--:--</span>
+                    <span class="text-muted">|</span>
+                    <span id="usdInrDisplay" class="text-warning fw-bold">USD/INR: ₹--.--</span>
+                </div>
+                <div class="nav-controls">
+                    <button class="theme-toggle-btn" onclick="toggleTheme()">
+                        <span id="themeIcon">🌙</span> <span id="themeText">Dark</span>
+                    </button>
+                    <span id="dataAgeBadge" class="data-age-badge">--</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="globalModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content p-3 shadow-lg">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-info mb-0">🌍 Global Clocks &amp; Currencies</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div>
+                        <div class="global-card">
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="font-size: 1.3rem;">🇮🇳</span>
+                                <div><b>India (INR)</b><br><small class="text-muted" id="inDate">--</small></div>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold text-info" id="inClock">--:--:--</span><br>
+                                <span class="badge bg-warning text-dark" id="inCurr">USD/INR: ₹--.--</span>
+                            </div>
+                        </div>
+                        <div class="global-card">
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="font-size: 1.3rem;">🇺🇸</span>
+                                <div><b>United States (USD)</b><br><small class="text-muted" id="usDate">--</small></div>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold text-info" id="usClock">--:--:--</span><br>
+                                <span class="badge bg-secondary">USD/USD: $1.00</span>
+                            </div>
+                        </div>
+                        <div class="global-card">
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="font-size: 1.3rem;">🇨🇳</span>
+                                <div><b>China (CNY)</b><br><small class="text-muted" id="cnDate">--</small></div>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold text-info" id="cnClock">--:--:--</span><br>
+                                <span class="badge bg-warning text-dark" id="cnCurr">USD/CNY: ¥--.--</span>
+                            </div>
+                        </div>
+                        <div class="global-card">
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="font-size: 1.3rem;">🇷🇺</span>
+                                <div><b>Russia (RUB)</b><br><small class="text-muted" id="ruDate">--</small></div>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold text-info" id="ruClock">--:--:--</span><br>
+                                <span class="badge bg-danger" id="ruCurr">USD/RUB: ₽--.--</span>
+                            </div>
+                        </div>
+                        <div class="global-card">
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="font-size: 1.3rem;">🇨🇦</span>
+                                <div><b>Canada (CAD)</b><br><small class="text-muted" id="caDate">--</small></div>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold text-info" id="caClock">--:--:--</span><br>
+                                <span class="badge bg-success" id="caCurr">USD/CAD: $--.--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% block content %}{% endblock %}
+
+        <footer class="site-footer">
+            Ultimate Pro Trading Scanner {{ version }} &middot; Data from Yahoo Finance, delayed &middot;
+            For education and research only, not investment advice.
+        </footer>
+    </div>
+</div>
+
+<button class="gemini-chat-btn" onclick="toggleGeminiChat()" title="Gemini AI Assistant">✨</button>
+<div class="gemini-chat-window" id="geminiChatWindow">
+    <div class="chat-header">
+        <span>✨ Gemini AI Assistant</span>
+        <button class="btn btn-sm btn-close btn-close-white" onclick="toggleGeminiChat()"></button>
+    </div>
+    <div class="chat-body" id="chatBody">
+        <div class="chat-msg msg-gemini">Namaskar! Mi tumcha Gemini AI assistant ahe. Tumhi mala konthayhi prakaracha prashan vicharu shakta!</div>
+    </div>
+    <div class="chat-footer">
+        <input type="text" id="chatInput" class="form-control form-control-sm" placeholder="Ask Gemini..." onkeypress="handleChatKey(event)">
+        <button class="btn btn-primary btn-sm" onclick="sendChatMessage()">Send</button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

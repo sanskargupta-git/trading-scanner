@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Heatmap · Ultimate Pro Trading Scanner{% endblock %}
+
+{% block content %}
+<div class="text-center mb-3">
+    <h2 class="fw-bold text-info">MARKET HEATMAP</h2>
+    <p class="text-muted small">The whole market in one glance. Tap any tile to open its chart.</p>
+</div>
+
+<div class="card p-3 shadow-sm">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div class="d-flex gap-2 align-items-center flex-wrap">
+            <select id="universeSelect" class="form-select form-select-sm" style="max-width: 170px;" onchange="loadHeatmap()">
+                <option value="nifty50">Nifty 50</option>
+                <option value="banknifty">Bank Nifty</option>
+                <option value="finnifty">Fin Nifty</option>
+                <option value="commodities">Commodities</option>
+                <option value="all">Everything</option>
+            </select>
+            <select id="colourSelect" class="form-select form-select-sm" style="max-width: 190px;" onchange="renderHeatmap()">
+                <option value="pct">Colour by daily %</option>
+                <option value="score">Colour by signal score</option>
+                <option value="rsi">Colour by RSI</option>
+            </select>
+        </div>
+        <div class="legend-row" id="legendRow"></div>
+    </div>
+
+    <div id="marketSummary" class="mb-3 text-muted" style="font-size: 0.82rem;"></div>
+
+    <div class="heat-grid" id="heatGrid">
+        <div class="text-muted loading-cell">Loading live prices <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/heatmap.js') }}"></script>
+{% endblock %}

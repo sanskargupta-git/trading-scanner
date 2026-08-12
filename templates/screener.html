@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Screener · Ultimate Pro Trading Scanner{% endblock %}
+
+{% block content %}
+<div class="text-center mb-3">
+    <h2 class="fw-bold text-info">SIGNAL SCREENER</h2>
+    <p class="text-muted small">Stack filters to find setups. Everything updates with the live scan.</p>
+</div>
+
+<div class="card p-3 shadow-sm">
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="filter-group-title">Universe</div>
+            <select id="universeSelect" class="form-select form-select-sm" onchange="loadStocks()">
+                <option value="nifty50">Nifty 50</option>
+                <option value="banknifty">Bank Nifty</option>
+                <option value="finnifty">Fin Nifty</option>
+                <option value="commodities">Commodities</option>
+                <option value="giftnifty">Gift Nifty</option>
+                <option value="all">Everything</option>
+            </select>
+
+            <div class="filter-group-title mt-3">Sort by</div>
+            <select id="sortSelect" class="form-select form-select-sm" onchange="applyFilters()">
+                <option value="score">Signal strength</option>
+                <option value="pct_desc">Top gainers</option>
+                <option value="pct_asc">Top losers</option>
+                <option value="rsi_asc">RSI low to high</option>
+                <option value="rsi_desc">RSI high to low</option>
+                <option value="symbol">Symbol A–Z</option>
+            </select>
+
+            <div class="filter-group-title mt-3">Match</div>
+            <select id="matchSelect" class="form-select form-select-sm" onchange="applyFilters()">
+                <option value="all">All selected filters</option>
+                <option value="any">Any selected filter</option>
+            </select>
+        </div>
+
+        <div class="col-md-9">
+            <div class="filter-group-title">Bullish signals</div>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <label class="filter-chip"><input type="checkbox" data-f="macd_bull" onchange="applyFilters()">⚡ MACD Bullish</label>
+                <label class="filter-chip"><input type="checkbox" data-f="dow_buy" onchange="applyFilters()">📈 DOW BUY</label>
+                <label class="filter-chip"><input type="checkbox" data-f="ema_golden" onchange="applyFilters()">⚔️ Golden Cross</label>
+                <label class="filter-chip"><input type="checkbox" data-f="bb_up" onchange="applyFilters()">📊 Bollinger Up</label>
+                <label class="filter-chip"><input type="checkbox" data-f="dmi_bull" onchange="applyFilters()">🎯 DMI Bullish</label>
+                <label class="filter-chip"><input type="checkbox" data-f="candle_bull" onchange="applyFilters()">🔥 Big Bull Candle</label>
+                <label class="filter-chip"><input type="checkbox" data-f="rsi_oversold" onchange="applyFilters()">📉 RSI &lt; 30</label>
+            </div>
+
+            <div class="filter-group-title">Bearish signals</div>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <label class="filter-chip"><input type="checkbox" data-f="macd_bear" onchange="applyFilters()">⚡ MACD Bearish</label>
+                <label class="filter-chip"><input type="checkbox" data-f="dow_sell" onchange="applyFilters()">📉 DOW SELL</label>
+                <label class="filter-chip"><input type="checkbox" data-f="ema_death" onchange="applyFilters()">⚔️ Death Cross</label>
+                <label class="filter-chip"><input type="checkbox" data-f="bb_down" onchange="applyFilters()">📊 Bollinger Down</label>
+                <label class="filter-chip"><input type="checkbox" data-f="dmi_bear" onchange="applyFilters()">🎯 DMI Bearish</label>
+                <label class="filter-chip"><input type="checkbox" data-f="candle_bear" onchange="applyFilters()">🔥 Big Bear Candle</label>
+                <label class="filter-chip"><input type="checkbox" data-f="rsi_overbought" onchange="applyFilters()">📈 RSI &gt; 70</label>
+            </div>
+
+            <div class="filter-group-title">Trend quality</div>
+            <div class="d-flex flex-wrap gap-2">
+                <label class="filter-chip"><input type="checkbox" data-f="adx_strong" onchange="applyFilters()">🎯 ADX &gt; 25 (strong trend)</label>
+                <label class="filter-chip"><input type="checkbox" data-f="up_today" onchange="applyFilters()">🟢 Up today</label>
+                <label class="filter-chip"><input type="checkbox" data-f="down_today" onchange="applyFilters()">🔴 Down today</label>
+                <button class="broker-btn" onclick="clearFilters()">✕ Clear all</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card p-3 shadow-sm">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h5 class="fw-bold text-info mb-0">Results <span id="resultCount" class="result-count"></span></h5>
+        <div class="d-flex gap-2 align-items-center">
+            <input type="text" class="form-control form-control-sm" id="symbolSearch" style="max-width: 180px;"
+                   placeholder="Search symbol…" oninput="applyFilters()">
+            <button class="broker-btn" onclick="downloadResults()">⬇ CSV</button>
+        </div>
+    </div>
+
+    <div class="master-table-wrapper" id="screenerWrapper">
+        <table class="master-table">
+            <thead>
+                <tr>
+                    <th class="symbol-th" style="vertical-align: middle;">Stock</th>
+                    <th>Score</th>
+                    <th>🔥 Big Candle</th>
+                    <th>⚡ MACD</th>
+                    <th>📈 DOW</th>
+                    <th>⚔️ EMA</th>
+                    <th>📊 Bollinger</th>
+                    <th>📉 RSI</th>
+                    <th>🎯 DMI</th>
+                    <th>🎯 ADX</th>
+                    <th>📊 Chart</th>
+                </tr>
+            </thead>
+            <tbody id="screenerBody">
+                <tr><td colspan="11" class="text-center text-muted loading-cell">Loading live scan <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/screener.js') }}"></script>
+{% endblock %}
