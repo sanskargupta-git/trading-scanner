@@ -15,6 +15,7 @@
                     </div>
                     <div class="stock-price mono" id="sPrice">--</div>
                     <div class="stock-change" id="sChange">--</div>
+                    <div class="hero-meta" id="sMeta"></div>
                 </div>
                 <div class="d-flex flex-column gap-2 align-items-end">
                     <div class="tf-tabs" id="tfTabs" role="tablist" aria-label="Chart timeframe">
@@ -42,9 +43,10 @@
         <div class="col-lg-8">
             <div class="panel">
                 <div class="panel-head">
-                    <h2 class="panel-title">Indicator Grid <span class="sub">timeframe shown on each cell</span></h2>
+                    <h2 class="panel-title">Indicator Grid <span class="sub">requested timeframe shown on each cell</span></h2>
                 </div>
                 <div class="panel-body">
+                    <div class="tf-note" id="tfNote" role="status" hidden></div>
                     <div class="ind-grid" id="indGrid"></div>
                 </div>
             </div>

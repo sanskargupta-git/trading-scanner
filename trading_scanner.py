@@ -26,7 +26,7 @@ log = logging.getLogger("scanner")
 
 app = Flask(__name__)
 
-APP_VERSION = "v4.0-terminal"
+APP_VERSION = "v4.1-terminal"
 IST = pytz.timezone("Asia/Kolkata")
 REFRESH_SECONDS = int(os.environ.get("REFRESH_SECONDS", "90"))
 
@@ -240,11 +240,18 @@ def batch_history(tickers, period, interval):
 
 
 def _pick(frames_by_interval, ticker, preferred):
-    """Preferred timeframe, falling back to daily when Yahoo throttles intraday."""
+    """Preferred timeframe, falling back to daily when Yahoo throttles intraday.
+
+    Returns (frame, interval_actually_used) so the UI can say which timeframe an
+    indicator really came from instead of silently mislabelling a daily value.
+    """
     df = frames_by_interval.get(preferred, {}).get(ticker)
     if df is not None and len(df) >= 30:
-        return df
-    return frames_by_interval.get("1d", {}).get(ticker)
+        return df, preferred
+    fallback = frames_by_interval.get("1d", {}).get(ticker)
+    if fallback is not None and len(fallback) >= 30:
+        return fallback, "1d"
+    return None, None
 
 
 def _rsi(close, window=14):
@@ -381,11 +388,15 @@ def compute_metrics(sym, frames_by_interval, inr_rate):
         "pct": _num((price - prev_close) / prev_close * 100) if prev_close else 0.0,
         "big_candle": None, "macd": None, "dow": None, "ema": None, "bb": None,
         "rsi": None, "rsi_trend": None, "dmi": None, "adx": None, "adx_trend": None,
-        "bull_15m": False, "hourly_trend": "Sideways", "score": 0,
+        "bull_15m": False, "hourly_trend": "Sideways", "score": 0, "bb_width": None,
+        # Which timeframe each indicator group actually came from. None means the
+        # group could not be computed at all.
+        "tf": {"15m": None, "1h": None, "5m": None},
     }
 
-    df15 = _pick(frames_by_interval, ticker, "15m")
-    if df15 is not None and len(df15) >= 30:
+    df15, used15 = _pick(frames_by_interval, ticker, "15m")
+    if df15 is not None:
+        m["tf"]["15m"] = used15
         close, high, low, open_ = df15["Close"], df15["High"], df15["Low"], df15["Open"]
         cp = _num(close.iloc[-1])
 
@@ -401,10 +412,17 @@ def compute_metrics(sym, frames_by_interval, inr_rate):
         if cp is not None and swing_high is not None and swing_low is not None:
             m["dow"] = "buy" if cp > swing_high else ("sell" if cp < swing_low else "wait")
 
-        bb_up = close.rolling(window=20).mean() + close.rolling(window=20).std() * 2
-        upper = _num(bb_up.iloc[-1])
+        bb_mid_s = close.rolling(window=20).mean()
+        bb_std_s = close.rolling(window=20).std()
+        upper = _num((bb_mid_s + bb_std_s * 2).iloc[-1])
         if upper is not None and cp is not None:
             m["bb"] = "up" if cp >= upper * 0.995 else "down"
+
+        # Bollinger bandwidth: how wide the bands sit relative to their middle
+        # line. Derived from the same rolling values, so it costs nothing extra.
+        mid, sd = _num(bb_mid_s.iloc[-1]), _num(bb_std_s.iloc[-1])
+        if mid and sd is not None and mid > 0:
+            m["bb_width"] = _num(4 * sd / mid * 100)
 
         rsi = _rsi(close)
         curr_rsi, prev_rsi = _num(rsi.iloc[-1], 1), (_num(rsi.iloc[-2], 1) if len(rsi) >= 2 else None)
@@ -427,8 +445,9 @@ def compute_metrics(sym, frames_by_interval, inr_rate):
         ema15 = _num(close.ewm(span=20, adjust=False).mean().iloc[-1])
         m["bull_15m"] = bool(cp is not None and ema15 is not None and cp >= ema15)
 
-    df1h = _pick(frames_by_interval, ticker, "1h")
-    if df1h is not None and len(df1h) >= 30:
+    df1h, used1h = _pick(frames_by_interval, ticker, "1h")
+    if df1h is not None:
+        m["tf"]["1h"] = used1h
         close = df1h["Close"]
         macd = close.ewm(span=12, adjust=False).mean() - close.ewm(span=26, adjust=False).mean()
         signal = macd.ewm(span=9, adjust=False).mean()
@@ -444,8 +463,9 @@ def compute_metrics(sym, frames_by_interval, inr_rate):
             elif last < ema20 * 0.999:
                 m["hourly_trend"] = "Bear"
 
-    df5m = _pick(frames_by_interval, ticker, "5m")
-    if df5m is not None and len(df5m) >= 30:
+    df5m, used5m = _pick(frames_by_interval, ticker, "5m")
+    if df5m is not None:
+        m["tf"]["5m"] = used5m
         close = df5m["Close"]
         e20 = _num(close.ewm(span=20, adjust=False).mean().iloc[-1])
         e50 = _num(close.ewm(span=50, adjust=False).mean().iloc[-1])
@@ -488,13 +508,33 @@ BADGES = {
 }
 
 
-def badge(field, value, sym):
+# Which frame each indicator is derived from, so a fallback can be flagged.
+FIELD_GROUP = {
+    "big_candle": "15m", "dow": "15m", "bb": "15m", "rsi": "15m",
+    "rsi_trend": "15m", "dmi": "15m", "adx": "15m", "adx_trend": "15m",
+    "macd": "1h", "ema": "5m",
+}
+GROUP_LABEL = {"15m": "15M", "1h": "1H", "5m": "5M", "1d": "Daily"}
+
+
+def tf_flag(field, metrics):
+    """Mark a value that came from daily bars when an intraday frame was asked for."""
+    group = FIELD_GROUP.get(field)
+    used = (metrics.get("tf") or {}).get(group)
+    if not group or not used or used == group:
+        return ""
+    return (f"<sup class='tf-flag' title='{GROUP_LABEL[group]} requested, "
+            f"{GROUP_LABEL[used]} fallback used'>{GROUP_LABEL[used][0]}</sup>")
+
+
+def badge(field, value, sym, metrics=None):
     if value is None or field not in BADGES or value not in BADGES[field]:
-        return "<span class='text-muted'>--</span>"
+        return "<span class='text-muted' title='Data unavailable'>--</span>"
     cls, text = BADGES[field][value]
+    flag = tf_flag(field, metrics or {})
     if cls.startswith("text-"):
-        return f"<span class='{cls}'>{text}</span>"
-    return f"<span class='{cls} clickable-badge' onclick=\"openStock('{sym}')\">{text}</span>"
+        return f"<span class='{cls}'>{text}</span>{flag}"
+    return f"<span class='{cls} clickable-badge' onclick=\"openStock('{sym}')\">{text}</span>{flag}"
 
 
 def render_row(m):
@@ -505,8 +545,10 @@ def render_row(m):
     trend_badge = ("<span class='badge-bull mini-badge'>15M Bull</span>" if m["bull_15m"]
                    else "<span class='badge-bear mini-badge'>15M Bear</span>")
 
-    rsi_cell = f"<span class='clickable-badge' onclick=\"openStock('{sym}')\">{m['rsi']}</span>" if m["rsi"] is not None else "<span class='text-muted'>--</span>"
-    adx_cell = f"<span class='clickable-badge' onclick=\"openStock('{sym}')\">{m['adx']}</span>" if m["adx"] is not None else "<span class='text-muted'>--</span>"
+    rsi_cell = (f"<span class='clickable-badge' onclick=\"openStock('{sym}')\">{m['rsi']}</span>{tf_flag('rsi', m)}"
+                if m["rsi"] is not None else "<span class='text-muted' title='Data unavailable'>--</span>")
+    adx_cell = (f"<span class='clickable-badge' onclick=\"openStock('{sym}')\">{m['adx']}</span>{tf_flag('adx', m)}"
+                if m["adx"] is not None else "<span class='text-muted' title='Data unavailable'>--</span>")
 
     return f"""
     <tr>
@@ -518,16 +560,16 @@ def render_row(m):
             </div>
             <div class='row-sub {pct_class}'>Daily: {pct_sign}{pct}%</div>
         </td>
-        <td data-label="Big Candle">{badge('big_candle', m['big_candle'], sym)}</td>
-        <td data-label="MACD 1H">{badge('macd', m['macd'], sym)}</td>
-        <td data-label="DOW 15M">{badge('dow', m['dow'], sym)}</td>
-        <td data-label="EMA 5M">{badge('ema', m['ema'], sym)}</td>
-        <td data-label="Bollinger">{badge('bb', m['bb'], sym)}</td>
+        <td data-label="Big Candle">{badge('big_candle', m['big_candle'], sym, m)}</td>
+        <td data-label="MACD 1H">{badge('macd', m['macd'], sym, m)}</td>
+        <td data-label="DOW 15M">{badge('dow', m['dow'], sym, m)}</td>
+        <td data-label="EMA 5M">{badge('ema', m['ema'], sym, m)}</td>
+        <td data-label="Bollinger">{badge('bb', m['bb'], sym, m)}</td>
         <td data-label="RSI">{rsi_cell}</td>
-        <td data-label="RSI Trend">{badge('rsi_trend', m['rsi_trend'], sym)}</td>
-        <td data-label="DMI">{badge('dmi', m['dmi'], sym)}</td>
+        <td data-label="RSI Trend">{badge('rsi_trend', m['rsi_trend'], sym, m)}</td>
+        <td data-label="DMI">{badge('dmi', m['dmi'], sym, m)}</td>
         <td data-label="ADX">{adx_cell}</td>
-        <td data-label="ADX Trend">{badge('adx_trend', m['adx_trend'], sym)}</td>
+        <td data-label="ADX Trend">{badge('adx_trend', m['adx_trend'], sym, m)}</td>
         <td class="chart-col">
             <select class="chart-select" onchange="openChart(this, '{sym}')" aria-label="Open chart for {sym}">
                 <option value="" selected disabled>Select Chart</option>

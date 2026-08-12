@@ -96,16 +96,33 @@ function render() {
                 <span>Trend ${escapeHtml(s.trend)}</span>
                 <span>1H ${escapeHtml(s.hourly_trend)}</span>
             </div>
+            <div class="mkt-meta"><span class="text-muted">${dataAgeText()}</span></div>
         </div>`;
     }).join('');
 }
 
+/* Watchlist prices come from the shared snapshot, so its age is the strip's age. */
+function dataAgeText() {
+    if (!META) return 'Data age --';
+    if (META.status !== 'ok') return 'Data unavailable';
+    const age = META.age_seconds === null || META.age_seconds === undefined
+        ? null : Math.round(META.age_seconds);
+    if (age === null) return 'Data age --';
+    return `${META.stale ? 'Stale · ' : ''}Data age ${age}s`;
+}
+
 async function load() {
     list = readWatchlist();
+    // Keep storage in sync when readWatchlist() had to repair malformed data.
+    save();
     if (!list.length) return render();
     try {
-        const res = await fetch(`/get_status_bulk?symbols=${encodeURIComponent(list.join(','))}`);
-        statuses = await res.json();
+        const [statusRes, metaRes] = await Promise.all([
+            fetch(`/get_status_bulk?symbols=${encodeURIComponent(list.join(','))}`),
+            fetch('/api/meta')
+        ]);
+        statuses = await statusRes.json();
+        applyMeta(await metaRes.json());
     } catch (e) {
         statuses = {};
     }

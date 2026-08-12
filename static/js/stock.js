@@ -5,16 +5,34 @@ const SYMBOL = document.getElementById('stockRoot').dataset.symbol;
 let stock = null;
 let timeframe = '15m';
 
+/* field, label, requested timeframe group */
 const INDICATORS = [
-    ['big_candle', 'Big Candle', '15M'],
-    ['macd', 'MACD Crossover', '1H'],
-    ['dow', 'DOW Breakout', '15M'],
-    ['ema', 'EMA Crossover', '5M'],
-    ['bb', 'Bollinger Band', '15M'],
-    ['rsi_trend', 'RSI Trend', '15M'],
-    ['dmi', 'DMI Crossover', '15M'],
-    ['adx_trend', 'ADX Trend', '15M']
+    ['big_candle', 'Big Candle', '15m'],
+    ['macd', 'MACD Crossover', '1h'],
+    ['dow', 'DOW Breakout', '15m'],
+    ['ema', 'EMA Crossover', '5m'],
+    ['bb', 'Bollinger Band', '15m'],
+    ['rsi_trend', 'RSI Trend', '15m'],
+    ['dmi', 'DMI Crossover', '15m'],
+    ['adx_trend', 'ADX Trend', '15m']
 ];
+
+const TF_LABEL = { '5m': '5M', '15m': '15M', '1h': '1H', '1d': 'Daily' };
+
+/* Never label a daily value as if it were intraday: say what was requested and
+   what actually arrived. */
+function tfTag(requested) {
+    const used = stock && stock.tf ? stock.tf[requested] : null;
+    if (!used) {
+        return `<span class="ind-tf tf-none" title="No data for this timeframe">unavailable</span>`;
+    }
+    if (used === requested) {
+        return `<span class="ind-tf">${TF_LABEL[requested]}</span>`;
+    }
+    return `<span class="ind-tf tf-fallback"
+                  title="${TF_LABEL[requested]} requested — Yahoo did not return enough intraday bars, so ${TF_LABEL[used]} data was used">
+                ${TF_LABEL[requested]} req · ${TF_LABEL[used]} fallback</span>`;
+}
 
 function setTimeframe(tf) {
     timeframe = tf;
@@ -65,30 +83,52 @@ function renderHero() {
         `https://in.tradingview.com/chart/?symbol=${tvSymbolFor(stock.symbol)}`;
 }
 
+/* Market status, data age and freshness, right under the price. */
+function renderHeroMeta(meta) {
+    const mkt = meta.market || {};
+    const age = meta.age_seconds === null || meta.age_seconds === undefined
+        ? '--' : `${Math.round(meta.age_seconds)}s`;
+    const freshness = meta.status !== 'ok' ? ['DATA UNAVAILABLE', 'chip-warn']
+        : meta.stale ? ['STALE DATA', 'chip-warn'] : ['FRESH DATA', 'chip-ok'];
+
+    document.getElementById('sMeta').innerHTML = `
+        <span class="chip"><span class="dot ${(mkt.state || 'closed').toLowerCase()}"></span>${escapeHtml(mkt.label || '--')}</span>
+        <span class="chip ${freshness[1]}">${freshness[0]}</span>
+        <span class="chip">Updated ${age} ago</span>`;
+}
+
 function renderIndicators() {
     const cells = INDICATORS.map(([key, name, tf]) => `
         <div class="ind-cell">
-            <div class="d-flex justify-content-between align-items-center">
-                <span class="ind-name">${name}</span><span class="ind-tf">${tf}</span>
-            </div>
+            <div class="ind-head"><span class="ind-name">${name}</span>${tfTag(tf)}</div>
             <div class="ind-value">${cell(key, stock[key])}</div>
         </div>`).join('');
 
     const values = `
         <div class="ind-cell">
-            <div class="d-flex justify-content-between align-items-center">
-                <span class="ind-name">RSI Value</span><span class="ind-tf">15M</span>
-            </div>
+            <div class="ind-head"><span class="ind-name">RSI Value</span>${tfTag('15m')}</div>
             <div class="ind-value mono">${fmt(stock.rsi, 1)}</div>
         </div>
         <div class="ind-cell">
-            <div class="d-flex justify-content-between align-items-center">
-                <span class="ind-name">ADX Value</span><span class="ind-tf">15M</span>
-            </div>
+            <div class="ind-head"><span class="ind-name">ADX Value</span>${tfTag('15m')}</div>
             <div class="ind-value mono">${fmt(stock.adx, 1)}</div>
         </div>`;
 
     document.getElementById('indGrid').innerHTML = cells + values;
+
+    const groups = stock.tf || {};
+    const fell = Object.entries(groups).filter(([req, used]) => used && used !== req);
+    const missing = Object.entries(groups).filter(([, used]) => !used);
+    const note = document.getElementById('tfNote');
+    if (fell.length || missing.length) {
+        const parts = [];
+        if (fell.length) parts.push(`${fell.map(([r]) => TF_LABEL[r]).join(', ')} unavailable from the provider — daily bars used instead`);
+        if (missing.length) parts.push(`${missing.map(([r]) => TF_LABEL[r]).join(', ')} could not be computed`);
+        note.innerHTML = `⚠ ${parts.join('. ')}.`;
+        note.hidden = false;
+    } else {
+        note.hidden = true;
+    }
 }
 
 function renderLevels() {
@@ -139,6 +179,14 @@ function renderSummary() {
         rsiClass = stock.rsi > 70 ? 'text-danger' : stock.rsi < 30 ? 'text-success' : 'text-muted';
     }
 
+    /* Bollinger bandwidth: band spread relative to the middle band. */
+    let volatility = 'Not available', volClass = 'text-muted';
+    if (stock.bb_width !== null && stock.bb_width !== undefined) {
+        const label = stock.bb_width > 6 ? 'Expanded' : stock.bb_width < 3 ? 'Compressed' : 'Normal';
+        volatility = `Band width ${stock.bb_width.toFixed(2)}% — ${label}`;
+        volClass = stock.bb_width > 6 ? 'text-warning' : 'text-muted';
+    }
+
     const checks = [
         stock.big_candle === 'bull', stock.macd === 'bull', stock.dow === 'buy',
         stock.ema === 'golden', stock.bb === 'up', stock.rsi_trend === 'up', stock.dmi === 'bull'
@@ -152,6 +200,8 @@ function renderSummary() {
             <span class="summary-val ${momentumClass}">${momentum}</span></div>
         <div class="summary-row"><span class="summary-key">Strength</span>
             <span class="summary-val ${strengthClass}">${strength}</span></div>
+        <div class="summary-row"><span class="summary-key">Volatility</span>
+            <span class="summary-val ${volClass}">${volatility}</span></div>
         <div class="summary-row"><span class="summary-key">RSI</span>
             <span class="summary-val ${rsiClass}">${rsiState}</span></div>
         <div class="summary-row"><span class="summary-key">Hourly Trend</span>
@@ -201,6 +251,7 @@ async function load() {
         if (data.source === 'live') { src.hidden = false; src.innerText = 'Off-universe symbol'; }
 
         renderHero();
+        renderHeroMeta(data);
         renderIndicators();
         renderLevels();
         renderSummary();

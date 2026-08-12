@@ -49,7 +49,47 @@ Koi fake data nahi hai — jo bhi number dikhta hai wo actual market data se cal
 
 ---
 
-## 4. Pages ka explanation
+## 4. Main indicators
+
+Har symbol pe ye 10 indicators calculate hote hain. Formulas standard hain — koi custom
+"secret strategy" nahi hai.
+
+| Indicator | Timeframe | Kya dekhta hai |
+|---|---|---|
+| 🔥 **Big Candle** | 15M | Candle ka range last 10 candles ke average se 1.5× bada hai ya nahi |
+| ⚡ **MACD** | 1H | 12/26 EMA ka difference vs uske 9-period signal line se |
+| 📈 **DOW Breakout** | 15M | Price ne pichhle 6 bars ka high toda (BUY) ya low toda (SELL) |
+| ⚔️ **EMA Crossover** | 5M | 20 EMA, 50 EMA ke upar hai (Golden) ya neeche (Death) |
+| 📊 **Bollinger Band** | 15M | Price upper band (20 SMA + 2 std dev) tak pahuncha ya nahi |
+| 📉 **RSI** | 15M | 14-period RSI. 30 se neeche oversold, 70 se upar overbought |
+| 📉 **RSI Trend** | 15M | RSI pichhli candle se badha ya ghata |
+| 🎯 **DMI** | 15M | +DI, −DI se aage hai (bullish) ya peeche |
+| 🎯 **ADX** | 15M | Trend ki strength. 25 se upar matlab trend mazboot hai |
+| 🎯 **ADX Trend** | 15M | ADX badh raha hai ya ghat raha hai |
+
+---
+
+## 5. Signal Score kya hai?
+
+Ye sab indicators ka ek **summary number** hai — alag strategy nahi.
+
+7 indicators dekhe jaate hain (Big Candle, MACD, DOW, EMA, Bollinger, RSI Trend, DMI).
+Har bullish signal pe **+1**, har bearish pe **−1**. Total −7 se +7 tak aata hai.
+
+| Score | Band | Matlab |
+|---|---|---|
+| +4 aur upar | 🟢 **STRONG BULLISH** | Zyadatar indicators bullish hain |
+| +1 se +3 | 🟢 **BULLISH** | Bullish side pe jhukav hai |
+| 0 | ⚪ **NEUTRAL** | Mixed signals |
+| −1 se −3 | 🔴 **BEARISH** | Bearish side pe jhukav hai |
+| −4 aur neeche | 🔴 **STRONG BEARISH** | Zyadatar indicators bearish hain |
+
+> ⚠️ Score sirf batata hai ki **abhi kitne indicators agree kar rahe hain**. Ye future
+> predict nahi karta aur na hi koi buy/sell signal hai.
+
+---
+
+## 6. Pages ka explanation
 
 | Page | URL | Kya milega |
 |---|---|---|
@@ -64,7 +104,7 @@ Koi fake data nahi hai — jo bhi number dikhta hai wo actual market data se cal
 
 ---
 
-## 5. Architecture — simple explanation
+## 7. Architecture — simple explanation
 
 **Problem:** Agar har page load pe har stock ka data alag-alag mangwaayein, to 50 stocks × 5 timeframes
 = **250+ requests**. Isse page hamesha timeout ho jaata hai aur Yahoo block kar deta hai.
@@ -99,7 +139,7 @@ Iska matlab:
 
 ---
 
-## 6. Tech stack
+## 8. Tech stack
 
 | Layer | Kya use hua |
 |---|---|
@@ -116,7 +156,7 @@ poora project easily padha ja sake.
 
 ---
 
-## 7. Local setup — step by step
+## 9. Local setup — step by step
 
 ### Step 1: Python install karo
 
@@ -194,7 +234,20 @@ Terminal me **Ctrl + C** dabao.
 
 ---
 
-## 8. Environment variables
+## 10. START.bat (Windows shortcut)
+
+Agar terminal se comfortable nahi ho, to bas `START.bat` pe **double-click** kar do.
+
+Ye khud:
+1. Check karta hai ki Python installed hai ya nahi (nahi hai to clear message deta hai)
+2. `requirements.txt` se saare packages install karta hai
+3. App start kar deta hai
+
+Uske baad browser me `http://localhost:5000` khol lo. Band karne ke liye us window me **Ctrl + C**.
+
+---
+
+## 11. Environment variables
 
 Sab optional hain — bina kisi config ke bhi project chalega.
 
@@ -214,7 +267,7 @@ Set karne ke liye `.env.example` ko copy karke `.env` banao:
 
 ---
 
-## 9. Gemini API key setup (optional)
+## 12. Gemini API key setup (optional)
 
 AI assistant ke bina bhi **poora dashboard normally chalta hai**. Assistant sirf ek extra feature hai.
 
@@ -249,7 +302,7 @@ real price, MACD, RSI, ADX aur score dekh kar samjhaayega — apne se koi number
 
 ---
 
-## 10. Run commands (summary)
+## 13. Run commands (summary)
 
 ```bash
 # Development (simple)
@@ -268,7 +321,7 @@ docker run -p 5000:5000 trading-terminal
 
 ---
 
-## 11. Railway deployment
+## 14. Railway deployment
 
 1. Code ko GitHub pe push karo
 2. [railway.app](https://railway.app) pe **New Project → Deploy from GitHub repo**
@@ -285,7 +338,7 @@ docker run -p 5000:5000 trading-terminal
 
 ---
 
-## 12. Folder structure
+## 15. Folder structure
 
 ```
 TradingScanner/
@@ -324,7 +377,7 @@ TradingScanner/
 
 ---
 
-## 13. Troubleshooting
+## 16. Troubleshooting
 
 **❓ Table khali hai / "Updating market data…" dikha raha hai**
 Pehle 10–15 second normal hain. Agar 1 minute se zyada ho jaaye, internet check karo.
@@ -362,7 +415,55 @@ Ye by design hai — dashboard blank nahi hota.
 
 ---
 
-## 14. Security notes
+## 17. Data limitations (padhna zaroori hai)
+
+Ye project honest rehne ki koshish karta hai. Jo cheezein ye **nahi** kar sakta:
+
+**1. Data delayed hai**
+Yahoo Finance se data aata hai, jo exchange ka live feed nahi hai. Isliye app kahin bhi
+"LIVE" claim nahi karta — sirf "Data age 42s" dikhata hai taaki tumhe pata rahe data kitna purana hai.
+
+**2. Timeframe fallback**
+Kabhi-kabhi Yahoo 15M ya 5M ka intraday data nahi deta. Aise waqt project **daily bars** use
+karta hai — par isko chhupata nahi. Stock Analysis page pe saaf likha aata hai:
+
+```
+15M req · Daily fallback
+```
+
+Aur upar ek banner bhi aata hai. Matlab tumhe hamesha pata rahega ki number kis timeframe ka hai.
+
+**3. Data unavailable**
+Agar kisi symbol ka data hi nahi mila, to app `--` dikhata hai. **Koi number bana kar nahi
+dikhata.** `NaN`, `undefined`, `null` kahin nahi aayega.
+
+**4. Stale data**
+Agar refresh fail ho jaye, to purana data screen pe rehta hai aur upar yellow banner aata hai:
+`STALE DATA — last successful update 180s ago`. Dashboard blank nahi hota.
+
+**5. Market holidays**
+App sirf time aur weekday dekh kar market status batata hai. NSE holiday list isme nahi hai —
+to holiday pe "Market Open" dikh sakta hai jabki actually band ho.
+
+---
+
+## 18. Options ka estimate limitation
+
+⚠️ **Options Lab ke premiums real nahi hain.**
+
+Options Lab spot price aur strike distance se ek **analytical estimate** banata hai. Ye:
+
+- ❌ Real exchange option-chain quotes **nahi** hain
+- ❌ Real bid/ask **nahi** hain
+- ❌ Implied volatility, Greeks, time decay **use nahi karte**
+- ✅ Sirf position sizing aur "agar premium X se Y ho jaye to kitna banega/jayega" samajhne ke liye hai
+
+Page pe har jagah `ESTIMATED / ANALYTICAL` likha hai. P&L me brokerage, STT, GST, stamp duty
+bhi shamil nahi hai. Real trading se pehle apne broker ka actual chain dekho.
+
+---
+
+## 19. Security notes
 
 - ✅ Code me **koi API key ya secret nahi** hai. Gemini key sirf `GEMINI_API_KEY` environment
   variable se aati hai — koi hardcoded fallback nahi
@@ -379,7 +480,7 @@ Ye by design hai — dashboard blank nahi hota.
 
 ---
 
-## 15. Financial disclaimer
+## 20. Financial disclaimer
 
 Ye project **sirf education aur research** ke liye hai.
 

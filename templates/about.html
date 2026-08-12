@@ -73,9 +73,16 @@
                     <li>Every page and API reads that snapshot, so requests answer in milliseconds and can
                         never block on the data provider.</li>
                 </ol>
-                <p class="mb-0">If a timeframe is throttled, indicators fall back to daily bars so cells degrade
-                   instead of going blank. If a whole refresh fails, the last good snapshot stays on screen and
-                   is clearly marked <b>stale</b> rather than being wiped.</p>
+                <p>If a whole refresh fails, the last good snapshot stays on screen and is clearly marked
+                   <b>stale</b> rather than being wiped.</p>
+
+                <h6 class="fw-bold mt-3 mb-2">Timeframe honesty</h6>
+                <p class="mb-2">Yahoo sometimes returns too few intraday bars. When that happens an indicator is
+                   computed from daily bars instead — but it is never presented as intraday. The Stock Analysis
+                   page labels the cell <span class="ind-tf tf-fallback">15M req · Daily fallback</span> and shows
+                   a banner; tables mark the value with a <sup class="tf-flag">D</sup> you can hover.</p>
+                <p class="mb-0">If nothing can be computed at all, the cell reads <span class="text-muted">--</span>.
+                   The dashboard never invents a value to fill a gap.</p>
             </div>
         </div>
     </div>

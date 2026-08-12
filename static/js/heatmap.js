@@ -37,9 +37,10 @@ function tileCaption(m, mode) {
 }
 
 const LEGENDS = {
-    pct: [['-3%', pctColour(-3)], ['0%', pctColour(0)], ['+3%', pctColour(3)]],
-    score: [['-5', scoreColour(-5)], ['0', scoreColour(0)], ['+5', scoreColour(5)]],
-    rsi: [['<30 oversold', rsiColour(20)], ['50', rsiColour(50)], ['>70 overbought', rsiColour(80)]]
+    pct: [['−3% or lower', pctColour(-3)], ['0%', pctColour(0)], ['+3% or higher', pctColour(3)]],
+    score: [['STRONG BEARISH', scoreColour(-5)], ['BEARISH', scoreColour(-2)], ['NEUTRAL', scoreColour(0)],
+            ['BULLISH', scoreColour(2)], ['STRONG BULLISH', scoreColour(5)]],
+    rsi: [['<30 oversold', rsiColour(20)], ['50 neutral', rsiColour(50)], ['>70 overbought', rsiColour(80)]]
 };
 
 function renderHeatmap() {

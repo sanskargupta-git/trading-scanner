@@ -25,9 +25,17 @@
                 <option value="rsi">Colour by RSI</option>
             </select>
         </div>
-        <div class="legend-row" id="legendRow"></div>
+        <div class="legend-row" id="legendRow" aria-label="Colour legend"></div>
     </div>
     <div class="panel-body">
+        <div class="legend-row band-legend mb-3" aria-label="Signal band legend">
+            <span class="text-muted">Signal bands:</span>
+            <span class="score-pill score-strong-bull">STRONG BULLISH</span>
+            <span class="score-pill score-bull">BULLISH</span>
+            <span class="score-pill score-neutral">NEUTRAL</span>
+            <span class="score-pill score-bear">BEARISH</span>
+            <span class="score-pill score-strong-bear">STRONG BEARISH</span>
+        </div>
         <div class="stat-grid mb-3" id="heatSummary"></div>
         <div class="heat-grid" id="heatGrid">
             <div class="loading-cell">Loading live prices <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span></div>

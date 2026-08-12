@@ -2,8 +2,8 @@
   ULTIMATE PRO TRADING TERMINAL
 ===============================================================
 
-Project      : Ultimate Pro Trading Terminal
-Version      : v4.0-terminal
+Project Name : Ultimate Pro Trading Terminal
+Version      : v4.1-terminal
 Purpose      : Personal trading analytics / education
 
 ---------------------------------------------------------------
@@ -15,13 +15,33 @@ Bank Nifty, Fin Nifty, MCX commodities and key indices, computes
 a standard set of technical indicators, and presents them as one
 consistent terminal-style view.
 
-Coverage     : 68 symbols (50 Nifty 50 + Bank Nifty + Fin Nifty
-               + 8 commodities + indices)
-Indicators   : Big Candle, MACD, DOW Breakout, EMA Crossover,
-               Bollinger Band, RSI, RSI Trend, DMI, ADX,
-               ADX Trend, plus a -7..+7 Signal Score
-Pages        : Dashboard, Screener, Heatmap, Stock Analysis,
-               Watchlist, Markets, Options Lab, About
+Coverage : 68 symbols
+           - 50 Nifty 50 constituents
+           - 12 Bank Nifty
+           - 10 Fin Nifty
+           -  8 MCX commodities
+           -  3 index / currency instruments
+           (overlapping symbols counted once)
+
+---------------------------------------------------------------
+PAGES
+---------------------------------------------------------------
+  /                  Dashboard       Index cards, market pulse,
+                                     top setups, watchlist, all
+                                     segment tables
+  /screener          Screener        15 columns, bias filters,
+                                     6 sort keys, CSV export
+  /heatmap           Heatmap         Coloured tiles by daily %,
+                                     signal score or RSI
+  /stock/<SYMBOL>    Stock Analysis  Indicator grid, timeframe
+                                     levels, technical summary
+  /watchlist         Watchlist       Saved symbols with live
+                                     price, score and data age
+  /markets           Markets         All segments plus currencies
+  /options           Options Lab     Analytical strike ladder and
+                                     validated P&L calculator
+  /about             About           Indicator reference and
+                                     architecture notes
 
 ---------------------------------------------------------------
 TECH STACK
@@ -32,6 +52,30 @@ Computation  : Pandas, NumPy
 Frontend     : Vanilla JavaScript, Bootstrap 5, custom CSS
 AI assistant : Google Gemini (optional)
 Deployment   : Docker, Railway
+
+No frontend build step. No chart library. No npm.
+
+---------------------------------------------------------------
+MAIN FEATURES
+---------------------------------------------------------------
+  * 10 technical indicators per symbol: Big Candle, MACD,
+    DOW Breakout, EMA Crossover, Bollinger Band, RSI, RSI Trend,
+    DMI, ADX, ADX Trend
+  * Signal Score from -7 to +7, presented in five bands from
+    STRONG BEARISH to STRONG BULLISH
+  * Background batch data engine - four requests per refresh
+    cycle for the whole universe, not one per symbol
+  * Snapshot cache: page requests never touch Yahoo Finance
+  * Stale-data recovery: a failed refresh keeps the last good
+    snapshot and labels it, instead of blanking the dashboard
+  * Timeframe transparency: when intraday data is unavailable the
+    UI says "15M req - Daily fallback" rather than mislabelling
+  * NSE market session status (pre / open / post / closed)
+  * Global symbol search with keyboard navigation
+  * CSV export per segment and from the screener
+  * Dark and light themes, persisted per browser
+  * Responsive down to 390px - wide tables become stacked cards
+  * Optional AI assistant that receives the real current metrics
 
 ---------------------------------------------------------------
 HOW TO RUN
@@ -44,7 +88,14 @@ HOW TO RUN
 Windows shortcut: double-click START.bat
 
 The first load takes 10-15 seconds while the background worker
-fetches its first snapshot. See README.md for full setup.
+fetches its first snapshot. See README.md for the full guide.
+
+Production:
+  gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 8 \
+           --timeout 120 trading_scanner:app
+
+Use one worker. The cache and its refresh thread live in process
+memory, so extra workers would each fetch their own copy.
 
 ---------------------------------------------------------------
 CONFIGURATION (all optional)
@@ -54,17 +105,43 @@ REFRESH_SECONDS  default 90
 GEMINI_API_KEY   unset - assistant disabled, rest works fine
 
 No secrets are stored in this source tree. Copy .env.example to
-.env for local configuration.
+.env for local configuration. .env is gitignored.
+
+---------------------------------------------------------------
+KNOWN LIMITATIONS
+---------------------------------------------------------------
+1. Prices are DELAYED Yahoo Finance data, not an exchange feed.
+   The UI never claims "live" - it shows the data age instead.
+
+2. Timeframe fallback. When Yahoo does not return enough
+   intraday bars, indicators are computed from daily bars. This
+   is always labelled in the UI, never hidden.
+
+3. Option premiums are ANALYTICAL ESTIMATES derived from spot
+   price and strike distance. They are not exchange quotes, use
+   no implied volatility or Greeks, and exclude all charges.
+
+4. No market holiday calendar. Market status is derived from the
+   clock and weekday only, so an NSE holiday may still show as
+   "Market Open".
+
+5. Content-Security-Policy allows 'unsafe-inline' for scripts
+   and styles because the markup uses inline event handlers.
+   Every other CSP directive is strict.
+
+6. Symbols outside the scanned universe are fetched live on
+   demand and cached for five minutes. The first such request
+   takes a few seconds and is labelled "Off-universe symbol".
+
+7. The watchlist lives in browser localStorage, so it does not
+   sync across devices or browsers.
 
 ---------------------------------------------------------------
 DISCLAIMER
 ---------------------------------------------------------------
 For education and research only. This is NOT investment advice
-and makes no claim of accuracy or profitability.
-
-Prices are delayed Yahoo Finance data, not a live exchange feed.
-Option premiums are analytical estimates derived from spot price
-and strike distance, NOT real exchange option-chain quotes.
+and makes no claim of accuracy or profitability. No indicator
+predicts the future.
 
 Verify everything with your broker before making any trading
 decision. All trading risk is your own.

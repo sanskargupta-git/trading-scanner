@@ -325,11 +325,31 @@ a:hover { color: var(--accent); text-decoration: underline; }
 .stock-hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
 .stock-price { font-size: 2rem; font-weight: 800; line-height: 1.1; }
 .stock-change { font-size: 1rem; font-weight: 700; margin-top: 3px; }
-.ind-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; }
+.ind-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: 10px; }
 .ind-cell { background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 9px; padding: 11px 13px; }
+.ind-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; min-height: 26px; }
 .ind-name { font-size: .67rem; text-transform: uppercase; letter-spacing: .6px; color: var(--text-dim); font-weight: 700; }
-.ind-tf { font-size: .62rem; color: var(--text-faint); font-weight: 600; }
+.ind-tf { font-size: .61rem; color: var(--text-faint); font-weight: 700; text-align: right; line-height: 1.25; flex-shrink: 0; }
+.ind-tf.tf-fallback { color: var(--warn); }
+.ind-tf.tf-none { color: var(--text-faint); font-style: italic; }
 .ind-value { margin-top: 7px; font-size: .88rem; font-weight: 700; }
+
+/* Superscript marker on a table cell whose value came from a fallback timeframe. */
+.tf-flag { color: var(--warn); font-size: .62rem; font-weight: 800; margin-left: 2px; cursor: help; }
+
+.tf-note {
+    background: var(--warn-bg); border: 1px solid rgba(232,177,58,.28); color: var(--warn);
+    border-radius: 8px; padding: 8px 12px; font-size: .77rem; font-weight: 600; margin-bottom: 12px;
+}
+
+.hero-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.chip {
+    display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px;
+    background: var(--surface-2); border: 1px solid var(--border); color: var(--text-dim);
+    font-size: .71rem; font-weight: 600; white-space: nowrap;
+}
+.chip.chip-ok { color: var(--bull); border-color: rgba(47,191,113,.34); background: var(--bull-bg); }
+.chip.chip-warn { color: var(--warn); border-color: rgba(232,177,58,.34); background: var(--warn-bg); }
 
 .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-soft); }
 .summary-row:last-child { border-bottom: none; }
@@ -393,7 +413,14 @@ a:hover { color: var(--accent); text-decoration: underline; }
 .chat-header { background: var(--surface-2); padding: 11px 14px; font-weight: 700; font-size: .86rem;
     display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
 .chat-body { flex: 1; padding: 13px; overflow-y: auto; display: flex; flex-direction: column; gap: 9px; font-size: .83rem; }
-.chat-footer { padding: 10px; background: var(--surface-2); border-top: 1px solid var(--border); display: flex; gap: 6px; }
+.chat-disclaimer {
+    padding: 7px 13px; background: var(--surface-2); border-top: 1px solid var(--border);
+    color: var(--text-faint); font-size: .68rem; line-height: 1.35;
+}
+.chat-footer { padding: 10px; background: var(--surface-2); border-top: 1px solid var(--border-soft); display: flex; gap: 6px; }
+
+.band-legend { gap: 7px; }
+.master-table th.sorted { color: var(--accent); }
 .chat-msg { padding: 9px 12px; border-radius: 9px; max-width: 86%; line-height: 1.45; white-space: pre-wrap; }
 .msg-user { background: var(--accent); color: #fff; align-self: flex-end; }
 .msg-gemini { background: var(--surface-3); color: var(--text); align-self: flex-start; }

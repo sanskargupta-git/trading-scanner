@@ -48,10 +48,37 @@ function currentResults() {
     });
 }
 
+/* Mark the active sort column in the header so the ordering is never a mystery. */
+const SORT_COLUMN = {
+    score: 'Score', pct: 'Symbol', rsi: 'RSI', adx: 'ADX', price: 'Symbol', symbol: 'Symbol'
+};
+
+function renderSortIndicators() {
+    const key = document.getElementById('sortSelect').value;
+    const asc = document.getElementById('sortDir').value === 'asc';
+    const target = SORT_COLUMN[key];
+
+    document.querySelectorAll('#screenerHead th').forEach(th => {
+        th.classList.remove('sorted');
+        th.removeAttribute('aria-sort');
+        const base = th.dataset.label || th.textContent.replace(/[▲▼]\s*$/, '').trim();
+        th.dataset.label = base;
+        th.textContent = base;
+        if (base === target) {
+            th.classList.add('sorted');
+            th.textContent = `${base} ${asc ? '▲' : '▼'}`;
+            th.setAttribute('aria-sort', asc ? 'ascending' : 'descending');
+        }
+    });
+}
+
 function render() {
+    renderSortIndicators();
     const rows = currentResults();
     const body = document.getElementById('screenerBody');
-    document.getElementById('resultCount').innerText = `${rows.length} of ${allStocks.length} symbols`;
+    const noun = allStocks.length === 1 ? 'stock' : 'stocks';
+    document.getElementById('resultCount').innerText =
+        `Showing ${rows.length} of ${allStocks.length} ${noun}`;
 
     if (!rows.length) {
         body.innerHTML = `<tr><td colspan="14" class="empty-state"><span class="big">🔍</span>
