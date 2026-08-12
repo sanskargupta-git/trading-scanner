@@ -1,5 +1,20 @@
 # 📊 Ultimate Pro Trading Terminal
 
+> ## 📖 Kaunsi file padhni hai?
+>
+> | Aapko kya chahiye? | File |
+> |---|---|
+> | 🔧 **Project install karna hai** (ye file) | **README.md** — Hinglish |
+> | 🔧 **Project install karaycha aahe** | **[README_MINGLISH.md](README_MINGLISH.md)** — Marathi + English |
+> | 🖥️ **Website kaise use kare, samajhna hai** | **[USER_GUIDE.md](USER_GUIDE.md)** — Hinglish |
+> | 🖥️ **Website kashi vaparaychi, samjun ghyaycha aahe** | **[USER_GUIDE_MINGLISH.md](USER_GUIDE_MINGLISH.md)** — Marathi + English |
+>
+> **Agar aap sirf website use karna chahte ho** (install nahi karna), to seedha
+> **[USER_GUIDE.md](USER_GUIDE.md)** kholo — usme har page, har colour aur har
+> indicator bilkul simple bhasha me samjhaya gaya hai.
+
+---
+
 > ### ⚡ SUPER QUICK START (Windows)
 > 1. ZIP ko **Extract** karo
 > 2. Folder ke andar **`START.bat`** pe double-click karo
