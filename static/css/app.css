@@ -331,6 +331,7 @@ a:hover { color: var(--accent); text-decoration: underline; }
 .ind-name { font-size: .67rem; text-transform: uppercase; letter-spacing: .6px; color: var(--text-dim); font-weight: 700; }
 .ind-tf { font-size: .61rem; color: var(--text-faint); font-weight: 700; text-align: right; line-height: 1.25; flex-shrink: 0; }
 .ind-tf.tf-fallback { color: var(--warn); }
+.ind-tf .tf-line { display: block; white-space: nowrap; }
 .ind-tf.tf-none { color: var(--text-faint); font-style: italic; }
 .ind-value { margin-top: 7px; font-size: .88rem; font-weight: 700; }
 

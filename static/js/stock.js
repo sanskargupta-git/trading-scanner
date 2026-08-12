@@ -30,8 +30,9 @@ function tfTag(requested) {
         return `<span class="ind-tf">${TF_LABEL[requested]}</span>`;
     }
     return `<span class="ind-tf tf-fallback"
-                  title="${TF_LABEL[requested]} requested — Yahoo did not return enough intraday bars, so ${TF_LABEL[used]} data was used">
-                ${TF_LABEL[requested]} req · ${TF_LABEL[used]} fallback</span>`;
+                  title="${TF_LABEL[requested]} requested — the provider did not return enough intraday bars, so ${TF_LABEL[used]} data was used instead">
+                <span class="tf-line">Requested: ${TF_LABEL[requested]}</span>
+                <span class="tf-line">Using: ${TF_LABEL[used]} fallback</span></span>`;
 }
 
 function setTimeframe(tf) {

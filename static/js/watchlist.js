@@ -64,8 +64,16 @@ function render() {
     document.getElementById('wlCount').innerText = `${shown.length} of ${list.length}`;
 
     if (!list.length) {
-        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><span class="big">⭐</span>
-            Your watchlist is empty. Add a symbol above, or reset to the default list.</div>`;
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+            <span class="big">⭐</span>
+            <div style="font-weight:700; color:var(--text); margin-bottom:6px;">Your watchlist is empty</div>
+            <div style="max-width:460px; margin:0 auto 14px;">
+                Type a symbol such as <b>RELIANCE</b> or <b>TCS</b> in the box above and press
+                <b>Add</b>. You can also open any stock from the Screener or Heatmap and use the
+                <b>+ Watchlist</b> button there. Your list is saved in this browser.
+            </div>
+            <button class="pill" onclick="resetWatchlist()">↺ Load the default list</button>
+        </div>`;
         return;
     }
     if (!shown.length) {

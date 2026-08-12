@@ -1,500 +1,1124 @@
 # 📊 Ultimate Pro Trading Terminal
 
-Ek personal trading analytics dashboard jisme Nifty 50, Bank Nifty, Fin Nifty, MCX commodities
-aur indices — sab ek hi jagah pe monitor kar sakte ho.
-
-> ⚠️ Ye ek **learning aur research project** hai. Ye koi trading advice nahi deta, koi order place
-> nahi karta, aur profit ka koi guarantee nahi hai. Prices delayed hain.
-
----
-
-## 1. Project kya hai?
-
-Normally market dekhne ke liye 10 alag-alag chart tabs kholne padte hain — ek me RSI, ek me MACD,
-ek me price. Har baar sab manually check karna padta hai.
-
-Ye project wahi kaam ek screen pe kar deta hai. Ye Yahoo Finance se **real market data** laata hai,
-uspe standard technical indicators calculate karta hai, aur sab kuch ek clean terminal-style
-dashboard me dikha deta hai.
-
-Koi fake data nahi hai — jo bhi number dikhta hai wo actual market data se calculate hota hai.
+> ### ⚡ SUPER QUICK START (Windows)
+> 1. ZIP ko **Extract** karo
+> 2. Folder ke andar **`START.bat`** pe double-click karo
+> 3. Browser me kholo → **http://localhost:5000**
+>
+> **Manual (koi bhi OS):**
+> ```
+> python -m venv venv
+> venv\Scripts\activate          (Mac/Linux: source venv/bin/activate)
+> pip install -r requirements.txt
+> python trading_scanner.py
+> ```
+> Pehli baar table bharne me **10–15 second** lagte hain. Ye normal hai.
 
 ---
 
-## 2. Ye kya karta hai?
+## 📑 Index
 
-- **67 symbols** ka live data track karta hai (50 Nifty stocks + Bank Nifty + Fin Nifty + commodities + indices)
-- Har symbol pe **10 technical indicators** calculate karta hai
-- Har symbol ko ek **Signal Score** deta hai (−7 se +7 tak) — kitne indicators bullish hain minus kitne bearish
-- Har **90 second** me background me data refresh karta hai
-- Bullish/bearish setups ko rank karke top 5 dikhata hai
-- Market ka overall mood dikhata hai (kitne stocks up, kitne down)
-
----
-
-## 3. Main features
-
-| Feature | Kya karta hai |
-|---|---|
-| 📈 **10 indicators** | Big Candle, MACD, DOW Breakout, EMA Crossover, Bollinger Band, RSI, RSI Trend, DMI, ADX, ADX Trend |
-| 🎯 **Signal Score** | Sab indicators ka summary ek number me — turant pata chal jaata hai stock ka bias |
-| 🔍 **Screener** | Bias se filter karo, score/RSI/ADX se sort karo, CSV download karo |
-| 🔥 **Heatmap** | Poora market ek screen pe rangeen tiles me |
-| ⭐ **Watchlist** | Apne stocks save karo (browser me save hota hai) |
-| 🧮 **Options Lab** | Strike ladder aur P&L calculator |
-| ✨ **AI Assistant** | Gemini ko actual scanner numbers milte hain, wo unhe simple language me samjhata hai |
-| 🌗 **Dark / Light** | Dono theme, choice save ho jaati hai |
-| 📱 **Mobile ready** | Phone pe tables automatically cards ban jaate hain |
-| 📊 **Live status** | Market open/closed, data kitna purana hai, next refresh kab hai |
+| # | Section | # | Section |
+|---|---|---|---|
+| 1 | [Project Intro](#1-project-intro) | 14 | [Railway Deployment](#14-railway-deployment) |
+| 2 | [Important Disclaimer](#2-important-disclaimer) | 15 | [Health Check](#15-health-check) |
+| 3 | [Features](#3-features) | 16 | [Troubleshooting](#16-troubleshooting) |
+| 4 | [How The Project Works](#4-how-the-project-works) | 17 | [Data Limitations](#17-data-limitations) |
+| 5 | [System Requirements](#5-system-requirements) | 18 | [Options Limitation](#18-options-limitation) |
+| 6 | [Easiest Way To Run — Windows](#6-easiest-way-to-run--windows) | 19 | [Security](#19-security) |
+| 7 | [Windows Manual Setup](#7-windows-manual-setup) | 20 | [Folder Structure](#20-folder-structure) |
+| 8 | [macOS Setup](#8-macos-setup) | 21 | [API Overview](#21-api-overview) |
+| 9 | [Linux Setup](#9-linux-setup) | 22 | [Development Guide](#22-development-guide) |
+| 10 | [Gemini Setup (Optional)](#10-gemini-setup--optional) | 23 | [How To Customize](#23-how-to-customize) |
+| 11 | [.env Setup](#11-env-setup) | 24 | [Known Limitations](#24-known-limitations) |
+| 12 | [START.bat Explanation](#12-startbat-explanation) | 25 | [Project Information](#25-project-information) |
+| 13 | [Docker Setup](#13-docker-setup) | 26 | [Final Quick Start](#26-final-quick-start) |
 
 ---
 
-## 4. Main indicators
+## 1. Project Intro
 
-Har symbol pe ye 10 indicators calculate hote hain. Formulas standard hain — koi custom
+Ye ek **personal trading analytics dashboard** hai jisme Nifty 50, Bank Nifty, Fin Nifty,
+Commodities aur dusre market segments ko ek jagah monitor kar sakte ho.
+
+**Problem kya thi?**
+Market analyse karne ke liye normally 10 alag-alag chart tabs kholne padte hain — ek me RSI dekho,
+ek me MACD, ek me price. Har stock ke liye ye repeat karo. Bahut time waste hota hai.
+
+**Ye project kya karta hai?**
+Yahoo Finance se **real market data** laata hai, uspe standard technical indicators calculate karta
+hai, aur sab kuch ek clean terminal-style dashboard me dikha deta hai. Total **68 symbols** track
+hote hain aur har **90 second** me data automatically refresh hota rehta hai.
+
+Koi fake data nahi hai. Jo bhi number screen pe dikhta hai wo actual market data se calculate hota
+hai. Agar kisi cheez ka data nahi milta to project `--` dikhata hai — **number bana kar nahi dikhata**.
+
+---
+
+## 2. Important Disclaimer
+
+> ### ⚠️ Ye padhna zaroori hai
+
+- 📚 Ye project **sirf education aur research** ke liye hai
+- ❌ Ye **investment advice nahi** hai
+- ❌ Koi **buy/sell recommendation nahi** hai
+- ❌ **Profit ka koi guarantee nahi** hai
+- ⚠️ **Technical signals galat ho sakte hain** — koi bhi indicator future predict nahi karta
+- ⏱️ **Market data delayed hai** (Yahoo Finance), live exchange feed nahi hai
+- 🧮 Options Lab ke premiums **estimated** hain, real exchange quotes nahi
+
+Koi bhi trading decision lene se pehle apne broker ke actual data se verify karo.
+Market me paisa lagane ka risk poori tarah tumhara hai.
+
+---
+
+## 3. Features
+
+### Pages
+
+| Page | URL | Kya milega |
+|---|---|---|
+| **Dashboard** | `/` | Index cards (Nifty 50, Bank Nifty, Fin Nifty, India VIX), Market Pulse (kitne bullish/bearish/neutral, top gainer/loser), Top 5 Bullish aur Top 5 Bearish setups, tumhari watchlist, aur saare segment tables |
+| **Screener** | `/screener` | Saare stocks ek table me — signal bias se filter, 6 tarah se sort, symbol search, CSV export. Live count: "Showing 23 of 50 stocks" |
+| **Heatmap** | `/heatmap` | Har stock ek rangeen tile. Colour daily %, signal score ya RSI se choose kar sakte ho. Tile pe click karo → Stock Analysis khulega |
+| **Stock Analysis** | `/stock/RELIANCE` | Ek stock ki poori detail — price, score band, market status, data age, 10-indicator grid (har cell pe timeframe likha), timeframe levels (5M/15M/1H/1D), Technical Summary |
+| **Watchlist** | `/watchlist` | Apne symbols add/remove karo, search karo, live price + score + data age dekho. Browser me save hota hai |
+| **Markets** | `/markets` | Saare segments (Nifty 50, Bank Nifty, Fin Nifty, Commodities, Gift Nifty) + currencies card grid me |
+| **Options Lab** | `/options` | Strike ladder + P&L calculator (side, lot size, quantity, entry, exit) |
+| **About** | `/about` | Har indicator ka matlab, architecture, tech stack, security notes |
+
+### Indicators
+
+Har symbol pe ye **10 indicators** calculate hote hain. Formulas standard hain — koi custom
 "secret strategy" nahi hai.
 
 | Indicator | Timeframe | Kya dekhta hai |
 |---|---|---|
-| 🔥 **Big Candle** | 15M | Candle ka range last 10 candles ke average se 1.5× bada hai ya nahi |
-| ⚡ **MACD** | 1H | 12/26 EMA ka difference vs uske 9-period signal line se |
+| 🔥 **Big Candle** | 15M | Candle ka high-low range last 10 candles ke average se 1.5× bada hai? Close > open ho to Bullish |
+| ⚡ **MACD** | 1H | 12 aur 26 period EMA ka difference, uske apne 9-period signal line se compare |
 | 📈 **DOW Breakout** | 15M | Price ne pichhle 6 bars ka high toda (BUY) ya low toda (SELL) |
 | ⚔️ **EMA Crossover** | 5M | 20 EMA, 50 EMA ke upar hai (Golden) ya neeche (Death) |
-| 📊 **Bollinger Band** | 15M | Price upper band (20 SMA + 2 std dev) tak pahuncha ya nahi |
-| 📉 **RSI** | 15M | 14-period RSI. 30 se neeche oversold, 70 se upar overbought |
-| 📉 **RSI Trend** | 15M | RSI pichhli candle se badha ya ghata |
-| 🎯 **DMI** | 15M | +DI, −DI se aage hai (bullish) ya peeche |
-| 🎯 **ADX** | 15M | Trend ki strength. 25 se upar matlab trend mazboot hai |
+| 📊 **Bollinger Band** | 15M | Price upper band (20 SMA + 2 standard deviation) tak pahuncha ya nahi |
+| 📉 **RSI** | 15M | 14-period Relative Strength Index. 30 se neeche oversold, 70 se upar overbought |
+| 📉 **RSI Trend** | 15M | RSI pichhli candle se badha (Uptick) ya ghata (Downtick) |
+| 🎯 **DMI** | 15M | +DI, −DI se aage hai (Bullish Cross) ya peeche (Bearish Cross) |
+| 🎯 **ADX** | 15M | Trend ki strength. 25 se upar matlab trend me dum hai |
 | 🎯 **ADX Trend** | 15M | ADX badh raha hai ya ghat raha hai |
 
----
+### Signal Score
 
-## 5. Signal Score kya hai?
-
-Ye sab indicators ka ek **summary number** hai — alag strategy nahi.
+Ye sab indicators ka **summary number** hai — alag strategy nahi.
 
 7 indicators dekhe jaate hain (Big Candle, MACD, DOW, EMA, Bollinger, RSI Trend, DMI).
-Har bullish signal pe **+1**, har bearish pe **−1**. Total −7 se +7 tak aata hai.
+Har bullish signal pe **+1**, har bearish pe **−1**. Total **−7 se +7** tak.
 
-| Score | Band | Matlab |
-|---|---|---|
-| +4 aur upar | 🟢 **STRONG BULLISH** | Zyadatar indicators bullish hain |
-| +1 se +3 | 🟢 **BULLISH** | Bullish side pe jhukav hai |
-| 0 | ⚪ **NEUTRAL** | Mixed signals |
-| −1 se −3 | 🔴 **BEARISH** | Bearish side pe jhukav hai |
-| −4 aur neeche | 🔴 **STRONG BEARISH** | Zyadatar indicators bearish hain |
-
-> ⚠️ Score sirf batata hai ki **abhi kitne indicators agree kar rahe hain**. Ye future
-> predict nahi karta aur na hi koi buy/sell signal hai.
-
----
-
-## 6. Pages ka explanation
-
-| Page | URL | Kya milega |
-|---|---|---|
-| **Dashboard** | `/` | Index cards (Nifty, Bank Nifty, Fin Nifty, India VIX), Market Pulse, top 5 bullish/bearish setups, watchlist, aur sab segment tables |
-| **Screener** | `/screener` | Sab stocks ek table me — bias filter, 6 sorting options, search, CSV export |
-| **Heatmap** | `/heatmap` | Har stock ek tile. Colour daily %, signal score ya RSI se. Tile pe click karo → analysis khulega |
-| **Stock Analysis** | `/stock/RELIANCE` | Ek stock ki poori detail — indicator grid, timeframe levels (5M/15M/1H/1D), technical summary |
-| **Watchlist** | `/watchlist` | Apne symbols add/remove karo, live price aur score dekho |
-| **Markets** | `/markets` | Sab segments + currencies card grid me |
-| **Options Lab** | `/options` | Strike ladder + P&L calculator (lot size, quantity, entry, exit) |
-| **About** | `/about` | Har indicator ka matlab, architecture, tech stack |
-
----
-
-## 7. Architecture — simple explanation
-
-**Problem:** Agar har page load pe har stock ka data alag-alag mangwaayein, to 50 stocks × 5 timeframes
-= **250+ requests**. Isse page hamesha timeout ho jaata hai aur Yahoo block kar deta hai.
-
-**Solution:** Background worker + snapshot cache.
-
-```
-        ┌──────────────────────────────────────┐
-        │   Background Thread (har 90 sec)     │
-        │                                      │
-        │   4 batch requests  ──►  Yahoo       │
-        │   (5M, 15M, 1H, 1D — sab symbols)    │
-        │              │                       │
-        │              ▼                       │
-        │   Indicators calculate               │
-        │              │                       │
-        │              ▼                       │
-        │        SNAPSHOT (memory)             │
-        └──────────────┬───────────────────────┘
-                       │  (sirf padhta hai)
-        ┌──────────────▼───────────────────────┐
-        │   Browser  ──►  Flask  ──►  Snapshot │
-        │   Response time: ~20 milliseconds    │
-        └──────────────────────────────────────┘
-```
-
-Iska matlab:
-- **250+ requests → 4 requests** per cycle
-- Page kabhi Yahoo ka wait nahi karta, isliye kabhi timeout nahi hota
-- Agar Yahoo fail ho jaaye, to purana data screen pe rehta hai aur **STALE** mark ho jaata hai —
-  dashboard blank nahi hota
-
----
-
-## 8. Tech stack
-
-| Layer | Kya use hua |
+| Score | Band |
 |---|---|
-| Backend | **Python 3**, **Flask** |
-| Market data | **yfinance** (Yahoo Finance) |
-| Calculations | **Pandas**, **NumPy** |
-| Frontend | Plain **JavaScript**, **Bootstrap 5**, custom CSS |
-| AI | **Google Gemini** (optional) |
-| Server | **Gunicorn** |
-| Deploy | **Docker**, Railway |
+| +4 aur upar | 🟢 **STRONG BULLISH** |
+| +1 se +3 | 🟢 **BULLISH** |
+| 0 | ⚪ **NEUTRAL** |
+| −1 se −3 | 🔴 **BEARISH** |
+| −4 aur neeche | 🔴 **STRONG BEARISH** |
 
-Koi frontend build step nahi hai (na React, na npm). Sirf templates, CSS aur vanilla JS — taaki
-poora project easily padha ja sake.
+> Score sirf batata hai ki **abhi kitne indicators aapas me agree kar rahe hain**.
+> Ye future predict nahi karta aur na hi koi buy/sell signal hai.
+
+### Aur bhi
+
+| Feature | Detail |
+|---|---|
+| ✨ **Gemini AI Assistant** | **Optional.** Enable karo to "explain RELIANCE" poochne pe usko RELIANCE ke actual current numbers (price, MACD, RSI, ADX, score) bheje jaate hain aur wo unhe simple language me samjhata hai. Apne se koi number nahi banata. Key na ho to baaki sab normal chalta hai |
+| 📥 **CSV Export** | Har segment table pe aur Screener pe CSV download button |
+| 📊 **Data Status** | Har page pe top bar me: market open/closed, last updated time, data age, next refresh countdown. Refresh fail ho to **STALE DATA** banner |
+| ⏱️ **Timeframe honesty** | Agar 15M data na mile aur daily use karna pade, to saaf likha aata hai `Requested: 15M / Using: Daily fallback` |
+| 🔍 **Global Search** | Top bar me symbol search, keyboard se navigate (↑↓ / Enter / Escape) |
+| 🌗 **Dark / Light theme** | Dono, choice browser me save ho jaati hai |
+| 📱 **Mobile support** | 390px tak. Phone pe wide tables automatically **cards** ban jaate hain, koi side-scroll nahi |
 
 ---
 
-## 9. Local setup — step by step
+## 4. How The Project Works
 
-### Step 1: Python install karo
-
-[python.org/downloads](https://www.python.org/downloads/) se download karo.
-
-> **Windows pe important:** install karte waqt **"Add Python to PATH"** wala checkbox zaroor tick karna.
-
-Check karo ki install ho gaya:
-
-```bash
-python --version
+```
+   Yahoo Finance (market data)
+              │
+              ▼
+   ┌──────────────────────────────────────────┐
+   │  BACKGROUND DATA ENGINE                  │
+   │  (ek thread, har 90 second)              │
+   │                                          │
+   │  Batch Fetch: sirf 4 requests            │
+   │  (5M, 15M, 1H, 1D — saare 70 tickers)    │
+   │              │                           │
+   │              ▼                           │
+   │  Technical Indicators calculate          │
+   │  (har symbol ke liye ek baar)            │
+   │              │                           │
+   │              ▼                           │
+   │  SNAPSHOT CACHE (memory me)              │
+   └──────────────┬───────────────────────────┘
+                  │  (handlers sirf padhte hain)
+                  ▼
+   ┌──────────────────────────────────────────┐
+   │  Flask API  →  Frontend (browser)        │
+   │  Response time: ~10-20 milliseconds      │
+   └──────────────────────────────────────────┘
 ```
 
-`Python 3.11.x` jaisa kuch dikhna chahiye (3.9 ya usse upar chalega).
+### Ye architecture kyun hai?
 
-### Step 2: ZIP extract karo
+**Seedha tarika (jo kaam nahi karta):** har page load pe har stock ka data alag mangwao.
+50 stocks × 5 timeframes = **250+ sequential requests**. Result:
+- Page hamesha timeout ho jaata hai
+- Yahoo rate-limit karke block kar deta hai
+- Har visitor pura load dobara banata hai
 
-ZIP ko right-click → **Extract All**. Ek folder banega `TradingScanner`.
+**Isliye:** ek background thread har 90 second me **4 batch requests** me poore universe ka data
+laata hai, ek baar indicators calculate karta hai, aur memory me snapshot rakh deta hai.
 
-### Step 3: Terminal us folder me kholo
+> ### 🔑 Important rule
+> **Normal page request kabhi Yahoo ko directly hit nahi karta.**
+> Har page aur API sirf snapshot padhta hai. Isliye response 10–20ms me aata hai aur
+> page kabhi Yahoo ka wait nahi karta.
 
-**Windows:** folder ke andar address bar me `cmd` type karke Enter dabao.
+Sirf ek exception hai: agar tum aisa symbol khologe jo scanned universe me nahi hai
+(jaise `/stock/DMART`), to uska data on-demand fetch hota hai aur 5 minute cache hota hai.
+Page pe "Off-universe symbol" badge dikh jaata hai.
 
-**Mac / Linux:**
-```bash
-cd path/to/TradingScanner
-```
+**Agar refresh fail ho jaye:** purana valid snapshot screen pe rehta hai aur **STALE DATA**
+mark ho jaata hai. Dashboard blank nahi hota.
 
-### Step 4: Virtual environment banao (recommended)
+---
 
-Isse project ke packages tumhare system Python se alag rahenge.
+## 5. System Requirements
 
-**Windows:**
-```bash
-python -m venv venv
-venv\Scripts\activate
-```
+| Cheez | Requirement |
+|---|---|
+| **OS** | Windows, macOS ya Linux — teeno chalte hain |
+| **Python** | **3.11 ya usse naya recommended.** Yahi verified hai: Docker image `python:3.11-slim` use karta hai, aur local testing Python 3.13 pe hui hai. `requirements.txt` ka floor 3.9 hai to 3.9/3.10 pe bhi install ho jaana chahiye — par maine test nahi kiya |
+| **Internet** | **Zaroori hai.** Market data internet se aata hai. Offline chalayoge to tables khali rahenge |
+| **Browser** | Koi bhi modern browser — Chrome, Edge, Firefox, Safari. Internet Explorer support nahi hai |
+| **RAM** | Normal use me kuch sau MB. Koi khaas requirement nahi — jo bhi computer Python chala sakta hai wo kaafi hai |
+| **Disk** | Project khud ~70 KB. Dependencies (pandas, numpy, yfinance) ~300–400 MB le sakti hain |
 
-**Mac / Linux:**
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
+---
 
-Activate hone ke baad terminal me `(venv)` dikhne lagega.
+## 6. Easiest Way To Run — Windows
 
-### Step 5: Requirements install karo
+### STEP 1 — ZIP download karo
+Jo ZIP mila hai usko apne computer pe save karo (Downloads folder me hi theek hai).
 
-```bash
-pip install -r requirements.txt
-```
+### STEP 2 — ZIP extract karo
+ZIP file pe **right-click** → **Extract All...** → **Extract**
 
-Pehli baar 1–2 minute lagega.
+Ek folder banega: **`UltimateProTradingTerminal`**
 
-### Step 6: Project run karo
+### STEP 3 — Folder kholo
+Us folder ke andar jao. Tumhe `trading_scanner.py`, `START.bat`, `templates`, `static`
+wagairah dikhenge.
 
-```bash
-python trading_scanner.py
-```
+### STEP 4 — START.bat pe double-click karo
 
-**Ya Windows pe shortcut:** `START.bat` pe double-click kar do — wo khud dependencies install karke app chalu kar dega.
+Bas. Ek black window (Command Prompt) khulegi aur ye khud kar dega:
+1. Check karega Python installed hai ya nahi
+2. `requirements.txt` se saare packages install karega
+3. Project start kar dega
 
-### Step 7: Browser kholo
+> **Pehli baar 1–2 minute lag sakte hain** kyunki packages download ho rahe hote hain.
+> Ghabrana nahi, window band mat karna.
+
+### STEP 5 — Browser kholo
 
 ```
 http://localhost:5000
 ```
 
-> ⏳ **Pehli baar 10–15 second lagenge.** Background worker pehla data fetch kar raha hota hai.
-> Tab tak "Updating market data…" dikhega. Ye normal hai — page apne aap bhar jaayega.
+> ⏳ **Pehle 10–15 second** tak "Updating market data…" dikhega. Background engine pehla
+> snapshot bana raha hota hai. Page apne aap bhar jaayega — refresh karne ki zaroorat nahi.
 
-### Step 8: Band karne ke liye
+### Band karne ke liye
 
-Terminal me **Ctrl + C** dabao.
+Us black window me **`Ctrl + C`** dabao. Ya window band kar do.
 
----
+### Agar START.bat kaam na kare
 
-## 10. START.bat (Windows shortcut)
-
-Agar terminal se comfortable nahi ho, to bas `START.bat` pe **double-click** kar do.
-
-Ye khud:
-1. Check karta hai ki Python installed hai ya nahi (nahi hai to clear message deta hai)
-2. `requirements.txt` se saare packages install karta hai
-3. App start kar deta hai
-
-Uske baad browser me `http://localhost:5000` khol lo. Band karne ke liye us window me **Ctrl + C**.
+Manual setup use karo — [Section 7](#7-windows-manual-setup) dekho.
 
 ---
 
-## 11. Environment variables
+## 7. Windows Manual Setup
 
-Sab optional hain — bina kisi config ke bhi project chalega.
+Command Prompt kholo project folder me (folder ke address bar me `cmd` type karke Enter dabao).
 
-| Variable | Default | Kaam |
-|---|---|---|
-| `PORT` | `5000` | Konse port pe chalega |
-| `REFRESH_SECONDS` | `90` | Kitne second baad data refresh hoga |
-| `GEMINI_API_KEY` | *(empty)* | AI assistant ke liye |
+**Step 1 — Python check karo**
+```cmd
+python --version
+```
+`Python 3.11.x` ya usse naya dikhna chahiye.
+Agar "not recognized" aaye to [python.org](https://www.python.org/downloads/) se install karo —
+aur install karte waqt **"Add Python to PATH"** checkbox **zaroor tick** karna.
 
-Set karne ke liye `.env.example` ko copy karke `.env` banao:
+**Step 2 — Virtual environment banao**
+```cmd
+python -m venv venv
+```
+(Isse project ke packages tumhare system Python se alag rahenge — safe rehta hai.)
 
-**Windows:** `copy .env.example .env`
-**Mac/Linux:** `cp .env.example .env`
+**Step 3 — Activate karo**
+```cmd
+venv\Scripts\activate
+```
+Ab terminal me line ke shuru me `(venv)` dikhne lagega.
 
-> 🔒 `.env` file `.gitignore` me hai — ye kabhi Git me commit nahi hogi. Apni key kabhi bhi
-> directly code me mat likhna.
+**Step 4 — Packages install karo**
+```cmd
+pip install -r requirements.txt
+```
+
+**Step 5 — Project chalao**
+```cmd
+python trading_scanner.py
+```
+
+**Step 6 — Browser kholo**
+```
+http://localhost:5000
+```
+
+**Band karne ke liye:** `Ctrl + C`
 
 ---
 
-## 12. Gemini API key setup (optional)
+## 8. macOS Setup
 
-AI assistant ke bina bhi **poora dashboard normally chalta hai**. Assistant sirf ek extra feature hai.
+Terminal kholo aur project folder me jao (`cd ` type karke folder ko drag-drop kar do).
 
-Agar enable karna hai:
+```bash
+# 1. Python check
+python3 --version
+
+# 2. Virtual environment
+python3 -m venv venv
+
+# 3. Activate
+source venv/bin/activate
+
+# 4. Packages install
+pip install -r requirements.txt
+
+# 5. Run
+python3 trading_scanner.py
+```
+
+Phir browser me kholo:
+```
+http://localhost:5000
+```
+
+**Band karne ke liye:** `Ctrl + C`
+
+> ⚠️ **Mac pe port 5000 ka issue:** macOS ka AirPlay Receiver bhi port 5000 use karta hai.
+> Agar error aaye to alag port pe chalao:
+> ```bash
+> PORT=5050 python3 trading_scanner.py
+> ```
+> Phir `http://localhost:5050` kholo.
+
+---
+
+## 9. Linux Setup
+
+```bash
+# 1. Python check
+python3 --version
+
+# 2. Agar venv module nahi hai (Ubuntu/Debian pe kabhi-kabhi alag se aata hai)
+sudo apt install python3-venv python3-pip
+
+# 3. Virtual environment banao
+python3 -m venv venv
+
+# 4. Activate karo
+source venv/bin/activate
+
+# 5. Packages install
+pip install -r requirements.txt
+
+# 6. Run
+python3 trading_scanner.py
+```
+
+Browser me kholo: `http://localhost:5000`
+
+**Deactivate karne ke liye** (venv se bahar aane ke liye):
+```bash
+deactivate
+```
+
+**Production style (gunicorn se):**
+```bash
+gunicorn --bind 0.0.0.0:5000 --workers 1 --threads 8 --timeout 120 trading_scanner:app
+```
+
+> ⚠️ **Hamesha `--workers 1` rakhna.** Cache aur background thread process ki memory me
+> rehte hain. Zyada workers ka matlab har worker apna alag data fetch karega — Yahoo pe
+> load multiply ho jaayega.
+
+---
+
+## 10. Gemini Setup — OPTIONAL
+
+> ### ✅ Gemini bilkul optional hai
+> Iske bina bhi **poora dashboard normally chalta hai** — saare pages, scanner, stock analysis,
+> watchlist, options, sab kuch. Assistant sirf ek extra feature hai. Key na ho to assistant
+> politely bata deta hai ki configure nahi hai, aur baaki app pe koi asar nahi padta.
+
+### API key kaise banayein
 
 1. [aistudio.google.com/apikey](https://aistudio.google.com/apikey) pe jao
 2. Google account se login karo
 3. **Create API Key** pe click karo
-4. Key copy karo
+4. Key copy kar lo
 
-**Local pe set karna:**
+### Key set karne ka tarika
 
-Windows (cmd):
-```bash
+**Windows CMD:**
+```cmd
 set GEMINI_API_KEY=your_key_here
 python trading_scanner.py
 ```
 
-Mac / Linux:
-```bash
-export GEMINI_API_KEY=your_key_here
+**Windows PowerShell:**
+```powershell
+$env:GEMINI_API_KEY = "your_key_here"
 python trading_scanner.py
 ```
 
-Ya `.env` file me daal do:
+**macOS / Linux:**
+```bash
+export GEMINI_API_KEY=your_key_here
+python3 trading_scanner.py
+```
+
+**Ya `.env` file me** (sabse aasan — [Section 11](#11-env-setup) dekho):
 ```
 GEMINI_API_KEY=your_key_here
 ```
 
-Assistant ko scanner ke **actual numbers** milte hain. `explain RELIANCE` poocho to wo RELIANCE ka
-real price, MACD, RSI, ADX aur score dekh kar samjhaayega — apne se koi number nahi banayega.
+### Assistant kaam kaise karta hai
+
+Jab tum `explain RELIANCE` ya `analyse TCS` poochte ho, to server pehle apne snapshot se us
+symbol ke **actual current numbers** nikaalta hai — price, daily %, signal score, MACD, EMA,
+DOW, Bollinger, RSI, ADX, hourly trend — aur wo Gemini ko bhejta hai. Prompt me clearly likha
+hota hai ki **sirf yahi numbers explain karo, apne se koi number mat banao**. Agar koi metric
+available nahi hai to wo "not available" bolta hai.
+
+Chat window ke neeche hamesha ye line dikhti hai:
+> *AI-generated explanation is informational and may contain errors.*
+
+> 🔒 **Apni API key kisi ko mat do aur kabhi Git me commit mat karo.**
 
 ---
 
-## 13. Run commands (summary)
+## 11. .env Setup
 
+Sabse aasan tarika settings dene ka.
+
+**Step 1 — `.env.example` ko copy karke `.env` banao**
+
+Windows:
+```cmd
+copy .env.example .env
+```
+
+macOS / Linux:
 ```bash
-# Development (simple)
-python trading_scanner.py
-
-# Production (gunicorn — Linux/Mac)
-gunicorn --bind 0.0.0.0:5000 --workers 1 --threads 8 --timeout 120 trading_scanner:app
-
-# Docker
-docker build -t trading-terminal .
-docker run -p 5000:5000 trading-terminal
+cp .env.example .env
 ```
 
-> ⚠️ **Hamesha `--workers 1` rakhna.** Cache aur background thread process memory me rehte hain.
-> Zyada workers ka matlab har worker apna alag data fetch karega — Yahoo pe load multiply ho jaayega.
+**Step 2 — `.env` ko Notepad ya kisi bhi text editor me kholo aur edit karo**
+
+### Supported variables
+
+Ye teen hi variables code me actually padhe jaate hain — aur teeno **optional** hain:
+
+| Variable | Default | Kya karta hai |
+|---|---|---|
+| `PORT` | `5000` | Konse port pe app chalega. Agar 5000 busy hai to `5050` kar do |
+| `REFRESH_SECONDS` | `90` | Kitne second baad background engine data refresh karega. **Isse bahut chhota mat karna** — Yahoo rate-limit kar dega |
+| `GEMINI_API_KEY` | *(khali)* | AI assistant enable karta hai. Khali chhod do to assistant off rehta hai, baaki sab chalta hai |
+
+Example `.env`:
+```
+PORT=5000
+REFRESH_SECONDS=90
+GEMINI_API_KEY=
+```
+
+> 🔒 `.env` file `.gitignore` me hai — ye kabhi Git me commit nahi hogi.
+> Apni key kabhi bhi seedha code me mat likhna.
 
 ---
 
-## 14. Railway deployment
+## 12. START.bat Explanation
 
-1. Code ko GitHub pe push karo
-2. [railway.app](https://railway.app) pe **New Project → Deploy from GitHub repo**
-3. Railway khud `Dockerfile` detect kar lega
-4. Optional: **Variables** tab me `GEMINI_API_KEY` add kar do
-5. Deploy hone ke baad `/healthz` kholke check karo
+`START.bat` ek Windows shortcut hai. Double-click karne pe ye exactly **teen kaam** karta hai:
 
-`/healthz` aisa response dega:
+1. **Python check** — `python --version` chala kar dekhta hai ki Python installed aur PATH me
+   hai ya nahi. Nahi hai to clear message deta hai ki python.org se install karo aur
+   "Add Python to PATH" tick karo, phir ruk jaata hai
+2. **Dependencies install** — `python -m pip install -r requirements.txt` chalata hai.
+   Fail ho to internet connection check karne ko bolta hai
+3. **App start** — `python trading_scanner.py` chala deta hai aur batata hai ki
+   `http://localhost:5000` kholo
+
+> ### ⚠️ Ek baat clear kar doon
+> **START.bat virtual environment (venv) nahi banata.** Ye packages tumhare current Python
+> me hi install karta hai. Agar tum apne system Python ko saaf rakhna chahte ho, to
+> [Section 7](#7-windows-manual-setup) wala manual setup use karo jisme venv banta hai.
+
+---
+
+## 13. Docker Setup
+
+Project me `Dockerfile` already hai (base image: `python:3.11-slim`).
+
+**Build karo:**
+```bash
+docker build -t ultimate-pro-trading-terminal .
+```
+
+**Run karo:**
+```bash
+docker run -p 5000:5000 ultimate-pro-trading-terminal
+```
+
+Browser me kholo:
+```
+http://localhost:5000
+```
+
+**Environment variables ke saath:**
+```bash
+docker run -p 5000:5000 \
+  -e GEMINI_API_KEY=your_key_here \
+  -e REFRESH_SECONDS=90 \
+  ultimate-pro-trading-terminal
+```
+
+**Ya `.env` file se:**
+```bash
+docker run -p 5000:5000 --env-file .env ultimate-pro-trading-terminal
+```
+
+Container ke andar app gunicorn se chalta hai — 1 worker, 8 threads, 120s timeout.
+`PORT` env variable se bind port change kar sakte ho.
+
+---
+
+## 14. Railway Deployment
+
+Railway pe deploy karna aasan hai kyunki `Dockerfile` already ready hai.
+
+**Step 1 — Code GitHub pe push karo**
+```bash
+git init
+git add .
+git commit -m "Ultimate Pro Trading Terminal"
+git remote add origin https://github.com/<your-username>/<your-repo>.git
+git push -u origin main
+```
+
+> 🔒 Push karne se pehle confirm kar lo ki `.env` commit nahi ho rahi. `.gitignore` me
+> already hai, par ek baar `git status` se check kar lena.
+
+**Step 2 — Railway project banao**
+[railway.app](https://railway.app) pe jaao → **New Project** → **Deploy from GitHub repo**
+→ apna repo select karo.
+
+**Step 3 — Dockerfile detection**
+Railway khud `Dockerfile` detect kar lega aur usse build karega. Koi extra config nahi chahiye.
+
+**Step 4 — Environment variables (optional)**
+Project → **Variables** tab → **New Variable**:
+- `GEMINI_API_KEY` = tumhari key (agar assistant chahiye)
+- `REFRESH_SECONDS` = `90` (default hi theek hai)
+
+**Step 5 — PORT ka dhyaan**
+`PORT` **Railway khud set karta hai**. Isko manually mat daalna. Dockerfile ka start command
+`${PORT:-5000}` use karta hai, to ye apne aap handle ho jaata hai.
+
+**Step 6 — Deploy check karo**
+Build ke baad Railway ek public URL dega. Us URL pe `/healthz` kholo — agar `"status": "ok"`
+aa raha hai to sab theek hai. Pehle 10–15 second `"warming"` dikh sakta hai.
+
+**Step 7 — Redeploy**
+`main` branch pe push karte hi Railway apne aap dobara deploy kar deta hai.
+
+---
+
+## 15. Health Check
+
+Deployment theek chal raha hai ya nahi, ye check karne ke liye:
+
+```
+http://localhost:5000/healthz
+```
+
+Response aisa aata hai:
+
 ```json
-{"ok": true, "status": "ok", "symbols": 68, "age_seconds": 12.4, "stale": false}
+{
+  "ok": true,
+  "status": "ok",
+  "stale": false,
+  "message": "",
+  "symbols": 68,
+  "age_seconds": 12.4,
+  "updated_at": 1786568078.7,
+  "refresh_seconds": 90,
+  "next_refresh_in": 78,
+  "market": {
+    "state": "CLOSED",
+    "label": "Market Closed",
+    "detail": "Opens 09:15 IST",
+    "open": false
+  }
+}
 ```
 
-`PORT` Railway khud set karta hai — usko manually mat chhedo.
+### Field ka matlab
 
----
+| Field | Matlab |
+|---|---|
+| `ok` | Server response de raha hai |
+| `status` | `warming` = pehla data aa raha hai · `ok` = data ready hai |
+| `stale` | `true` = last refresh fail hua, purana data dikh raha hai |
+| `message` | Stale ya warming hone pe user-facing message |
+| `symbols` | Kitne symbols ka data snapshot me hai (poora hone pe **68**) |
+| `age_seconds` | Data kitne second purana hai |
+| `updated_at` | Last successful refresh ka Unix timestamp |
+| `refresh_seconds` | Refresh interval (default 90) |
+| `next_refresh_in` | Agla refresh kitne second me |
+| `market.state` | `PRE` / `OPEN` / `POST` / `CLOSED` |
+| `market.label` | Human-readable market status |
 
-## 15. Folder structure
-
+Ek aur endpoint version batata hai:
 ```
-TradingScanner/
-├── trading_scanner.py      # Poora backend: data engine + indicators + routes
-├── templates/              # HTML pages
-│   ├── base.html           # Common layout (nav, status bar, assistant)
-│   ├── dashboard.html
-│   ├── screener.html
-│   ├── heatmap.html
-│   ├── stock.html
-│   ├── watchlist.html
-│   ├── markets.html
-│   ├── options.html
-│   ├── about.html
-│   └── error.html
-├── static/
-│   ├── css/app.css         # Saari styling (dark + light + mobile)
-│   └── js/
-│       ├── app.js          # Shared: theme, search, status bar, assistant
-│       ├── dashboard.js
-│       ├── screener.js
-│       ├── heatmap.js
-│       ├── stock.js
-│       ├── watchlist.js
-│       ├── markets.js
-│       └── options.js
-├── requirements.txt
-├── Dockerfile
-├── Procfile
-├── START.bat               # Windows one-click start
-├── .env.example
-├── .gitignore
-├── PROJECT_INFO.txt
-└── README.md
+http://localhost:5000/version
+```
+```json
+{"version": "v4.1-terminal", "yfinance": "1.5.2"}
 ```
 
 ---
 
 ## 16. Troubleshooting
 
-**❓ Table khali hai / "Updating market data…" dikha raha hai**
-Pehle 10–15 second normal hain. Agar 1 minute se zyada ho jaaye, internet check karo.
-`/healthz` kholke dekho `status` kya keh raha hai.
+### ❓ "python is not recognized" / Python not found
 
-**❓ `ModuleNotFoundError: No module named 'flask'`**
-Requirements install nahi hue, ya venv activate nahi hai.
-```bash
+Python installed nahi hai ya PATH me nahi hai.
+- [python.org/downloads](https://www.python.org/downloads/) se install karo
+- Install karte waqt **"Add Python to PATH"** checkbox **zaroor tick** karo
+- Install ke baad Command Prompt **band karke dobara kholo**
+- Windows pe `py --version` bhi try kar sakte ho
+
+### ❓ "pip is not recognized"
+
+```cmd
+python -m pip --version
+```
+Ye chal jaaye to `pip` ki jagah hamesha `python -m pip` use karo:
+```cmd
+python -m pip install -r requirements.txt
+```
+
+### ❓ "ModuleNotFoundError: No module named 'flask'"
+
+Packages install nahi hue, ya venv activate nahi hai.
+```cmd
+venv\Scripts\activate
 pip install -r requirements.txt
 ```
+Terminal me `(venv)` dikh raha hai? Nahi dikh raha to activate nahi hua.
 
-**❓ `python` command nahi mil raha (Windows)**
-Python PATH me nahi hai. Python dobara install karo aur "Add Python to PATH" tick karo.
-Ya `py` try karo: `py trading_scanner.py`
+### ❓ requirements install hone me error aa raha hai
 
-**❓ Port 5000 already in use**
-```bash
-# Windows
+- Internet connection check karo
+- pip upgrade karo: `python -m pip install --upgrade pip`
+- Agar Python 3.9/3.10 pe ho aur error aa raha hai, to Python 3.11+ install karke try karo
+- Company/college network pe firewall block kar sakta hai — mobile hotspot pe try karo
+
+### ❓ "Port 5000 is already in use"
+
+Koi aur program us port pe chal raha hai (Mac pe aksar AirPlay).
+
+Windows:
+```cmd
 set PORT=5050 && python trading_scanner.py
-# Mac/Linux
-PORT=5050 python trading_scanner.py
 ```
-Mac pe 5000 AirPlay use karta hai — 5050 use kar lo.
+Mac / Linux:
+```bash
+PORT=5050 python3 trading_scanner.py
+```
+Phir `http://localhost:5050` kholo.
 
-**❓ Kuch stocks me `--` dikh raha hai**
-Us symbol ka data Yahoo se nahi aaya. `--` ka matlab hai "data available nahi" —
+### ❓ Dashboard khali hai / "Updating market data…" dikha raha hai
+
+**Pehle 10–15 second ye normal hai** — background engine pehla snapshot bana raha hai.
+
+Agar 1 minute se zyada ho jaye:
+- Internet connection check karo
+- `http://localhost:5000/healthz` kholo aur `status` dekho
+- Terminal window me error messages dekho
+
+### ❓ "STALE DATA" banner aa raha hai
+
+Ek refresh fail hua hai. Ye **by design** hai — purana data screen pe rehta hai taaki dashboard
+blank na ho, aur project apne aap retry karta rehta hai. Usually 1–2 minute me theek ho jaata hai.
+
+Agar baar-baar aa raha hai to Yahoo temporarily rate-limit kar raha ho sakta hai. Thoda ruk jao.
+
+### ❓ Kuch stocks me `--` dikh raha hai
+
+Us symbol ka data provider se nahi aaya. `--` ka matlab hai **"data available nahi"** —
 project galat number banane ki jagah honestly `--` dikhata hai.
 
-**❓ AI assistant "not configured" bol raha hai**
-`GEMINI_API_KEY` set nahi hai. Ye normal hai — baaki sab kuch chalta rahega.
+### ❓ Indicator me "Requested: 15M / Using: Daily fallback" likha aa raha hai
 
-**❓ STALE DATA banner aa raha hai**
-Ek refresh fail hua hai. Purana data screen pe hai aur project apne aap retry kar raha hai.
-Ye by design hai — dashboard blank nahi hota.
+Yahoo ne us symbol ka 15-minute data nahi diya, isliye daily bars use hue. Ye **jaan-boojh kar
+dikhaya** jaata hai taaki tumhe pata rahe number kis timeframe ka hai. Ye error nahi hai.
+
+### ❓ AI assistant "not configured" bol raha hai
+
+`GEMINI_API_KEY` set nahi hai. **Ye bilkul normal hai** — baaki poora app chalta rahega.
+Enable karna ho to [Section 10](#10-gemini-setup--optional) dekho.
+
+### ❓ Yahoo Finance ka data hi nahi aa raha
+
+- Internet check karo
+- Weekend ya holiday pe intraday data purana ho sakta hai
+- Kabhi-kabhi Yahoo temporarily block karta hai — 5–10 minute baad try karo
+- VPN on hai to off karke dekho
+
+### ❓ Docker build fail ho raha hai
+
+- Docker Desktop chal raha hai? Check karo
+- `docker build` project folder ke andar se hi chalao (jahan `Dockerfile` hai)
+- Purana cache clear karo: `docker build --no-cache -t ultimate-pro-trading-terminal .`
+
+### ❓ Railway pe app start nahi ho raha
+
+- Railway ka **Deploy Logs** tab kholo, wahan actual error dikhta hai
+- `PORT` variable manually set mat karo — Railway khud karta hai
+- Build ke baad 15–20 second do, phir `/healthz` check karo
+- Dockerfile repo ke root me hona chahiye
 
 ---
 
-## 17. Data limitations (padhna zaroori hai)
+## 17. Data Limitations
 
-Ye project honest rehne ki koshish karta hai. Jo cheezein ye **nahi** kar sakta:
+Ye project honest rehne ki koshish karta hai. Ye cheezein jaanna zaroori hai:
 
-**1. Data delayed hai**
-Yahoo Finance se data aata hai, jo exchange ka live feed nahi hai. Isliye app kahin bhi
-"LIVE" claim nahi karta — sirf "Data age 42s" dikhata hai taaki tumhe pata rahe data kitna purana hai.
+**1. Data source aur delay**
+Data **Yahoo Finance** se aata hai — ye exchange ka live feed **nahi** hai, delayed data hai.
+Isliye app kahin bhi "LIVE" claim nahi karta. Uske badle top bar me **data age** dikhata hai
+(jaise "Data age 42s") taaki tumhe hamesha pata rahe data kitna purana hai.
 
-**2. Timeframe fallback**
-Kabhi-kabhi Yahoo 15M ya 5M ka intraday data nahi deta. Aise waqt project **daily bars** use
-karta hai — par isko chhupata nahi. Stock Analysis page pe saaf likha aata hai:
+**2. Intraday availability badalti rehti hai**
+Yahoo hamesha 5M/15M/1H data nahi deta — kabhi kam bars aate hain, kabhi bilkul nahi.
+
+**3. Timeframe fallback (chhupaya nahi jaata)**
+Agar requested intraday timeframe nahi milta, to indicator **daily bars** se calculate hota hai.
+Par ye kabhi chhupaya nahi jaata. Stock Analysis page pe har cell pe saaf likha aata hai:
 
 ```
-15M req · Daily fallback
+Requested: 15M
+Using: Daily fallback
 ```
 
-Aur upar ek banner bhi aata hai. Matlab tumhe hamesha pata rahega ki number kis timeframe ka hai.
+Upar ek banner bhi aata hai, aur dashboard/screener tables me us value pe ek chhota
+hover-able `D` marker aata hai.
 
-**3. Data unavailable**
-Agar kisi symbol ka data hi nahi mila, to app `--` dikhata hai. **Koi number bana kar nahi
-dikhata.** `NaN`, `undefined`, `null` kahin nahi aayega.
+**4. Data unavailable**
+Agar kisi symbol ka data hi nahi mila, to `--` dikhta hai. **Koi number bana kar nahi dikhaya
+jaata.** `NaN`, `null`, `undefined` kahin nahi aayega.
 
-**4. Stale data**
-Agar refresh fail ho jaye, to purana data screen pe rehta hai aur upar yellow banner aata hai:
+**5. Stale data handling**
+Refresh fail hone pe purana valid snapshot screen pe rehta hai aur yellow banner aata hai:
 `STALE DATA — last successful update 180s ago`. Dashboard blank nahi hota.
 
-**5. Market holidays**
-App sirf time aur weekday dekh kar market status batata hai. NSE holiday list isme nahi hai —
-to holiday pe "Market Open" dikh sakta hai jabki actually band ho.
+**6. Market holidays**
+App market status sirf **time aur weekday** se decide karta hai (NSE session: 09:15–15:30 IST,
+Mon–Fri). Ismein **NSE holiday calendar nahi hai** — to kisi holiday pe "Market Open" dikh sakta
+hai jabki actually exchange band ho. Reliable holiday source project me include nahi kiya gaya.
+
+**7. Universe ke bahar ke symbols**
+Jo symbol scanned list me nahi hai (jaise DMART), uska data on-demand fetch hota hai —
+pehli baar 1–3 second lagte hain, phir 5 minute cache rehta hai. Page pe
+"Off-universe symbol" badge dikh jaata hai.
+
+**8. Commodity prices approximate hain**
+MCX commodities (Gold, Silver, Crude) ke prices Yahoo ke USD futures se live USD/INR rate
+laga kar convert kiye jaate hain. Ye **approximate** hain — actual MCX quotes se thoda alag ho
+sakte hain.
 
 ---
 
-## 18. Options ka estimate limitation
+## 18. Options Limitation
 
-⚠️ **Options Lab ke premiums real nahi hain.**
+> ## ⚠️ Options Lab ke premiums REAL NAHI HAIN
+>
+> Ye baat bilkul clear honi chahiye.
 
-Options Lab spot price aur strike distance se ek **analytical estimate** banata hai. Ye:
+Options Lab spot price aur strike distance se ek **analytical estimate** banata hai.
 
-- ❌ Real exchange option-chain quotes **nahi** hain
-- ❌ Real bid/ask **nahi** hain
-- ❌ Implied volatility, Greeks, time decay **use nahi karte**
-- ✅ Sirf position sizing aur "agar premium X se Y ho jaye to kitna banega/jayega" samajhne ke liye hai
+**Ye kya NAHI hai:**
 
-Page pe har jagah `ESTIMATED / ANALYTICAL` likha hai. P&L me brokerage, STT, GST, stamp duty
-bhi shamil nahi hai. Real trading se pehle apne broker ka actual chain dekho.
+| ❌ | Nahi hai |
+|---|---|
+| ❌ | Live option-chain data |
+| ❌ | Real bid / ask prices |
+| ❌ | Real Implied Volatility (IV) |
+| ❌ | Real Greeks (Delta, Gamma, Theta, Vega) |
+| ❌ | Time decay ka calculation |
+| ❌ | Broker ya exchange ka koi quote |
+
+**Ye kya HAI:**
+
+| ✅ | Hai |
+|---|---|
+| ✅ | Position sizing samajhne ka tool |
+| ✅ | "Agar premium X se Y ho jaaye to kitna banega/jaayega" ka calculator |
+| ✅ | Lot size × quantity ka simple math |
+
+Page pe har jagah **`ESTIMATED / ANALYTICAL`** label lagaya gaya hai, aur API response me bhi
+`"estimated": true` flag aata hai.
+
+P&L calculation me **brokerage, STT, exchange fees, GST aur stamp duty shamil nahi** hai.
+Short position ke liye jo "capital outlay" dikhta hai wo premium received hai — wo margin
+**nahi** hai jo tumhara broker block karega.
+
+**Real trading se pehle apne broker ka actual option chain zaroor dekho.**
 
 ---
 
-## 19. Security notes
+## 19. Security
 
-- ✅ Code me **koi API key ya secret nahi** hai. Gemini key sirf `GEMINI_API_KEY` environment
-  variable se aati hai — koi hardcoded fallback nahi
-- ✅ `.env` gitignored hai
-- ✅ Har response pe security headers: Content-Security-Policy, X-Frame-Options,
+Is project me security ka dhyaan rakha gaya hai:
+
+### Kya kiya gaya hai
+
+- ✅ **Code me koi API key ya secret hardcoded nahi hai.** Gemini key sirf `GEMINI_API_KEY`
+  environment variable se aati hai — koi hardcoded fallback nahi hai
+- ✅ `.env` file `.gitignore` me hai, kabhi commit nahi hogi
+- ✅ Key ki value kabhi log me print nahi hoti
+- ✅ Har HTTP response pe security headers: Content-Security-Policy, X-Frame-Options,
   X-Content-Type-Options, Referrer-Policy, Permissions-Policy
 - ✅ Symbol input strict pattern se validate hota hai data layer tak pahunchne se pehle
-- ✅ Sab dynamic text escape hota hai DOM me daalne se pehle (XSS protection)
+- ✅ Saara dynamic text escape hota hai DOM me daalne se pehle (XSS protection)
 - ✅ Error hone pe user ko stack trace nahi dikhta — sirf server log me jaata hai
 
-> 🔑 Agar tumne kabhi galti se koi API key commit kar di ho, to sirf file se hataana kaafi
-> **nahi** hai — wo Git history me reh jaati hai. Us key ko provider ke dashboard se
-> **revoke karke nayi banao**.
+### Tum kya dhyaan rakho
+
+- 🔑 **Apni API key kisi ko share mat karo** — screenshot me bhi nahi
+- 🔑 **`.env` file kabhi commit mat karo** aur na hi ZIP me bhejo
+- 🔑 **ZIP share karne se pehle** check kar lo ki usme `.env` nahi hai
+- 🔑 **Agar galti se koi key leak ho jaye** — sirf file se hataana **kaafi nahi** hai.
+  Wo Git history me reh jaati hai. Us key ko provider ke dashboard se **turant revoke
+  karke nayi banao**
 
 ---
 
-## 20. Financial disclaimer
+## 20. Folder Structure
 
-Ye project **sirf education aur research** ke liye hai.
-
-- ❌ Ye investment advice **nahi** hai
-- ❌ Koi buy/sell recommendation **nahi** hai
-- ❌ Signals "100% accurate" **nahi** hain — koi bhi technical indicator future predict nahi karta
-- ❌ Profit ka koi guarantee **nahi** hai
-- ⚠️ Prices **delayed** hain (Yahoo Finance), live exchange feed nahi hai
-- ⚠️ Option premiums **estimated/analytical** hain — real exchange option-chain quotes nahi hain
-
-Koi bhi trading decision lene se pehle apne broker ke real data se verify karo. Market me
-paisa lagane ka risk poori tarah tumhara hai.
+```
+UltimateProTradingTerminal/
+│
+├── trading_scanner.py       # Poora backend: data engine, indicators, saare routes
+│
+├── templates/               # HTML pages (Jinja2)
+│   ├── base.html            # Common layout: nav, status bar, AI assistant, footer
+│   ├── dashboard.html       # Dashboard page
+│   ├── screener.html        # Screener page
+│   ├── heatmap.html         # Heatmap page
+│   ├── stock.html           # Stock Analysis page
+│   ├── watchlist.html       # Watchlist page
+│   ├── markets.html         # Markets page
+│   ├── options.html         # Options Lab page
+│   ├── about.html           # About page
+│   └── error.html           # 404 / 500 error page
+│
+├── static/
+│   ├── css/
+│   │   └── app.css          # Saari styling: dark + light theme, mobile layout
+│   └── js/
+│       ├── app.js           # Shared: theme, status strip, global search, assistant
+│       ├── dashboard.js     # Dashboard logic
+│       ├── screener.js      # Screener filters, sorting, CSV
+│       ├── heatmap.js       # Heatmap tiles aur colours
+│       ├── stock.js         # Stock Analysis rendering
+│       ├── watchlist.js     # Watchlist add/remove/persist
+│       ├── markets.js       # Markets page
+│       └── options.js       # Options Lab calculator
+│
+├── requirements.txt         # Python dependencies
+├── Dockerfile               # Docker build (python:3.11-slim + gunicorn)
+├── Procfile                 # Process definition (gunicorn command)
+├── START.bat                # Windows one-click start
+├── .env.example             # Environment variable template
+├── .gitignore               # Git ignore rules
+├── PROJECT_INFO.txt         # Short project summary
+└── README.md                # Ye file
+```
 
 ---
 
-**Made for learning.** Agar koi bug mile ya improvement idea ho, code padho — sab kuch
-`trading_scanner.py` aur `static/js/` me clearly likha hua hai. 🚀
+## 21. API Overview
+
+Ye saare endpoints actually code me maujood hain. Browser me directly khol kar dekh sakte ho.
+
+### Pages
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /` | Dashboard |
+| `GET /screener` | Screener page |
+| `GET /heatmap` | Heatmap page |
+| `GET /stock/<SYMBOL>` | Stock Analysis page (jaise `/stock/RELIANCE`) |
+| `GET /watchlist` | Watchlist page |
+| `GET /markets` | Markets page |
+| `GET /options` | Options Lab page |
+| `GET /about` | About page |
+
+### Data APIs
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /healthz` | Snapshot status, symbol count, data age, market status |
+| `GET /version` | App version aur yfinance version |
+| `GET /api/meta` | Sirf snapshot metadata (status, age, next refresh, market) |
+| `GET /api/stocks?type=nifty50` | Raw indicator values (JSON). `type` = `nifty50`, `banknifty`, `finnifty`, `commodities`, `giftnifty`, `all` |
+| `GET /api/stock/<SYMBOL>` | Ek symbol ki poori detail + timeframe levels |
+| `GET /api/indices` | Headline indices (Nifty, Bank Nifty, Fin Nifty, India VIX) + currency rates |
+| `GET /api/pulse` | Market breadth + top 5 bullish/bearish setups |
+| `GET /api/search?q=REL` | Symbol suggestions (sirf allowed list se) |
+| `GET /get_master_table_data?type=nifty50` | Dashboard table ke rendered rows + stats |
+| `GET /get_status_bulk?symbols=RELIANCE,TCS` | Ek saath kai symbols ka status (watchlist ke liye) |
+| `GET /get_signals?symbol=RELIANCE&interval=15m` | Ek symbol ke levels (EMA, swing, volume, crossover) |
+| `GET /get_strike_chain?symbol=RELIANCE` | Analytical strike ladder (estimated premiums) |
+| `GET /get_movers` | Top gainers aur losers |
+| `GET /get_currency_rate` | USD/INR, CNY, RUB, CAD rates |
+| `GET /export.csv?type=nifty50` | Segment ka CSV download |
+| `GET /gemini_chat?message=explain+RELIANCE` | AI assistant (key set ho to) |
+
+---
+
+## 22. Development Guide
+
+Agar tum code padhna ya modify karna chahte ho:
+
+### Backend logic — `trading_scanner.py`
+
+Poora backend ek hi file me hai, clearly sections me divided:
+
+| Section | Kya milega |
+|---|---|
+| **Universe** | Symbol lists (`NIFTY50_STOCKS`, `BANKNIFTY_STOCKS` wagairah), ticker mapping, lot sizes |
+| **Market clock** | `market_status()` — NSE session logic |
+| **Data engine** | `batch_history()` — batch download; `_pick()` — timeframe fallback logic |
+| **Indicators** | `compute_metrics()` — saare indicators yahan calculate hote hain. `_rsi()`, `_adx()` helper functions |
+| **Rendering** | `render_row()`, `badge()`, `tf_flag()` — HTML rows banate hain |
+| **Snapshot store** | `build_snapshot()`, `refresh_loop()`, `mark_stale()` — cache aur background thread |
+| **HTTP** | Saare `@app.route` handlers |
+
+### Kahan kya hai
+
+| Cheez | Location |
+|---|---|
+| **Market data fetch** | `batch_history()` — sirf yahi function Yahoo se baat karta hai |
+| **Indicators calculate** | `compute_metrics()` aur `compute_detail()` |
+| **Snapshot / cache** | `SNAPSHOT` global dict + `build_snapshot()` + `refresh_loop()` thread |
+| **Timeframe fallback** | `_pick()` return karta hai `(frame, interval_actually_used)` |
+| **Signal Score** | `compute_metrics()` ke end me; bands `score_band()` me |
+| **Templates** | `templates/` — `base.html` common layout hai, baaki usko extend karte hain |
+| **CSS** | `static/css/app.css` — ek hi file, tokens (CSS variables) se dono theme chalte hain |
+| **Shared JS** | `static/js/app.js` — theme, status strip, search, assistant, formatting helpers |
+| **Page JS** | `static/js/<page>.js` — har page ka apna script |
+
+### Important patterns
+
+- **Snapshot immutable hai** — `build_snapshot()` ek naya dict banata hai aur `SNAPSHOT`
+  ko wholesale replace kar deta hai. Readers ko lock nahi chahiye
+- **`_num()` helper** har numeric value ko finite-check karta hai, taaki NaN kabhi UI tak na pahunche
+- **`escapeHtml()`** frontend me har dynamic text pe lagta hai
+- **`clean_symbol()`** backend me har symbol input validate karta hai
+
+---
+
+## 23. How To Customize
+
+### Refresh interval badalna
+
+`.env` file me:
+```
+REFRESH_SECONDS=120
+```
+> ⚠️ Isse **60 se kam mat karna** — Yahoo rate-limit kar dega aur data aana band ho jaayega.
+
+### Theme badalna
+
+App me hi top-right corner me 🌙 / ☀️ button hai. Choice browser me save ho jaati hai.
+
+Colours change karne ho to `static/css/app.css` ke top me CSS variables hain:
+```css
+:root[data-theme="dark"] {
+    --bg: #0b0d11;
+    --accent: #4c8dff;
+    --bull: #2fbf71;
+    --bear: #f0555f;
+    ...
+}
+```
+Bas ye values badal do — poore app me apply ho jaayega.
+
+### Watchlist badalna
+
+App me hi `/watchlist` page pe add/remove kar sakte ho. Browser ke localStorage me save hota hai.
+
+Default list badalni ho to `static/js/watchlist.js` me:
+```javascript
+const DEFAULT_LIST = ['RELIANCE', 'TCS', 'HDFCBANK', 'INFY', 'ICICIBANK', 'SBIN'];
+```
+
+### Symbols add/remove karna
+
+`trading_scanner.py` me lists hain:
+```python
+NIFTY50_STOCKS = [...]
+BANKNIFTY_STOCKS = [...]
+FINNIFTY_STOCKS = [...]
+COMMODITIES_STOCKS = [...]
+```
+
+> ⚠️ **Dhyaan rakho:** `NIFTY50_STOCKS` me **exactly 50 symbols** hone chahiye — app start hote
+> hi ek assertion check karta hai aur galat count pe app chalega hi nahi. Ye jaan-boojh kar
+> rakha hai taaki galti pakdi jaaye.
+
+Naya symbol add karne se pehle confirm kar lo ki Yahoo pe wo ticker exist karta hai
+(Indian stocks ke liye `.NS` suffix lagta hai — code khud laga deta hai).
+
+### Naya page add karna
+
+1. `templates/` me naya HTML banao jo `base.html` ko extend kare
+2. `static/js/` me uska script banao
+3. `trading_scanner.py` me ek `@app.route` add karo
+4. `templates/base.html` ke nav `links` list me entry add karo
+
+### Gemini configuration
+
+Model change karna ho to `trading_scanner.py` me `gemini_chat()` function me:
+```python
+model="gemini-2.5-flash"
+```
+
+> 🔒 **Key kabhi code me mat likhna.** Hamesha `.env` ya environment variable use karo.
+
+---
+
+## 24. Known Limitations
+
+Honest list — ye cheezein project abhi nahi karta:
+
+1. **Data delayed hai** — Yahoo Finance ka delayed data, exchange ka live feed nahi
+2. **Market holiday calendar nahi hai** — status sirf time aur weekday se decide hota hai,
+   to NSE holiday pe "Market Open" dikh sakta hai
+3. **Options premiums estimated hain** — koi IV nahi, koi Greeks nahi, koi real chain nahi
+4. **Timeframe fallback hota hai** — intraday data na mile to daily use hota hai
+   (par ye hamesha UI me dikhaya jaata hai, chhupaya nahi jaata)
+5. **CSP me `unsafe-inline` hai** — markup me inline `onclick` handlers use hote hain.
+   Baaki har CSP directive strict hai
+6. **Watchlist sirf browser me save hoti hai** — devices ya browsers ke beech sync nahi hoti
+7. **Off-universe symbols slow hain** — pehli baar 1–3 second lagte hain (live fetch), phir 5 min cache
+8. **Single worker zaroori hai** — cache process memory me hai, multiple workers duplicate
+   fetching karenge
+9. **Rate limiting nahi hai** — personal use ke liye theek hai, public multi-user deployment
+   ke liye add karna padega
+10. **Commodity prices approximate hain** — USD futures se USD/INR laga kar convert kiye jaate hain
+11. **Koi database nahi hai** — sab kuch memory me hai, restart pe snapshot dobara banta hai
+    (10–15 second)
+12. **Historical charts nahi hain** — charts ke liye TradingView / Groww ke links diye gaye hain
+
+---
+
+## 25. Project Information
+
+| | |
+|---|---|
+| **Project Name** | Ultimate Pro Trading Terminal |
+| **Version** | `v4.1-terminal` |
+| **Purpose** | Personal Trading Analytics / Education / Research |
+| **Symbols tracked** | 68 (50 Nifty 50 + Bank Nifty + Fin Nifty + Commodities + Indices) |
+| **Pages** | 8 |
+| **Indicators** | 10 per symbol + Signal Score |
+| **Refresh interval** | 90 seconds (configurable) |
+| **Data source** | Yahoo Finance (delayed) via `yfinance` |
+| **Backend** | Python 3, Flask, Gunicorn |
+| **Computation** | Pandas, NumPy |
+| **Frontend** | Vanilla JavaScript, Bootstrap 5, custom CSS (koi build step nahi) |
+| **AI** | Google Gemini (optional) |
+| **Deployment** | Docker, Railway |
+
+---
+
+## 26. Final Quick Start
+
+### 🪟 WINDOWS (sabse aasan)
+
+```
+1. ZIP extract karo
+2. START.bat pe double-click karo
+3. Browser me kholo: http://localhost:5000
+```
+
+### 💻 MANUAL (Windows)
+
+```cmd
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+python trading_scanner.py
+```
+
+### 🍎 MANUAL (macOS / Linux)
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python3 trading_scanner.py
+```
+
+### 🐳 DOCKER
+
+```bash
+docker build -t ultimate-pro-trading-terminal .
+docker run -p 5000:5000 ultimate-pro-trading-terminal
+```
+
+**Phir browser me:** http://localhost:5000
+**Band karne ke liye:** `Ctrl + C`
+**Pehli baar 10–15 second lagenge** — background engine data laa raha hota hai.
+
+---
+
+<div align="center">
+
+**Made for learning.** 🚀
+
+Code padho, tod-phod karo, seekho — sab kuch `trading_scanner.py` aur `static/js/` me
+clearly likha hua hai.
+
+*Ye investment advice nahi hai. Trading risk tumhara apna hai.*
+
+</div>
