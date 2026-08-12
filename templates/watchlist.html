@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Watchlist · Pro Trading Terminal{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <h1 class="page-title">MY WATCHLIST</h1>
+    <p class="page-sub">Saved in this browser. Add any scanned symbol and click a card to open its full analysis.</p>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <div class="row g-2 align-items-end">
+            <div class="col-12 col-md-4">
+                <label class="field-label" for="addSymbol">Add symbol</label>
+                <div class="d-flex gap-2">
+                    <input type="text" id="addSymbol" class="form-control form-control-sm"
+                           placeholder="e.g. RELIANCE" onkeypress="if(event.key==='Enter')addSymbol()"
+                           aria-label="Symbol to add">
+                    <button class="btn btn-primary btn-sm" onclick="addSymbol()">Add</button>
+                </div>
+                <div class="field-error" id="addError"></div>
+            </div>
+            <div class="col-12 col-md-4">
+                <label class="field-label" for="wlSearch">Filter</label>
+                <input type="text" id="wlSearch" class="form-control form-control-sm"
+                       placeholder="Search your list…" oninput="render()" aria-label="Filter watchlist">
+            </div>
+            <div class="col-12 col-md-4 d-flex gap-2 justify-content-md-end">
+                <button class="pill" onclick="resetWatchlist()">↺ Reset to default</button>
+                <button class="pill" onclick="clearWatchlist()">✕ Clear all</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h2 class="panel-title">Tracked Symbols <span class="sub" id="wlCount"></span></h2>
+    </div>
+    <div class="panel-body">
+        <div class="wl-grid" id="wlGrid">
+            <div class="loading-cell">Loading <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/watchlist.js') }}"></script>
+{% endblock %}

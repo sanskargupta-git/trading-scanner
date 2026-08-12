@@ -1,57 +1,151 @@
 {% extends "base.html" %}
-{% block title %}About · Ultimate Pro Trading Scanner{% endblock %}
+{% block title %}About · Pro Trading Terminal{% endblock %}
 
 {% block content %}
-<div class="text-center mb-3">
-    <h2 class="fw-bold text-info">ABOUT THIS SCANNER</h2>
-    <p class="text-muted small">What each column means and where the numbers come from.</p>
+<div class="page-head">
+    <h1 class="page-title">ABOUT THIS PROJECT</h1>
+    <p class="page-sub">What it is, how it is built, and what the numbers actually mean.</p>
 </div>
 
-<div class="row">
+<div class="row g-3">
     <div class="col-lg-7">
-        <div class="card p-4 shadow-sm">
-            <h5 class="fw-bold text-info">Indicators</h5>
-            <table class="table table-sm align-middle" style="color: var(--text-color);">
-                <tbody>
-                    <tr><td style="width:170px;"><b>🔥 Big Candle</b> <span class="text-muted d-block" style="font-size:0.72rem;">15 min</span></td>
-                        <td>Flags a bar whose high-to-low range is at least 1.5× the average of the last 10 bars. Green when it closed above its open.</td></tr>
-                    <tr><td><b>⚡ MACD</b> <span class="text-muted d-block" style="font-size:0.72rem;">1 hour</span></td>
-                        <td>12/26 EMA difference against its own 9-period signal line. Bullish while MACD sits above the signal.</td></tr>
-                    <tr><td><b>📈 DOW Breakout</b> <span class="text-muted d-block" style="font-size:0.72rem;">15 min</span></td>
-                        <td>BUY when price clears the highest high of the previous six bars, SELL when it breaks the lowest low.</td></tr>
-                    <tr><td><b>⚔️ EMA Crossover</b> <span class="text-muted d-block" style="font-size:0.72rem;">5 min</span></td>
-                        <td>Golden while the 20 EMA is above the 50 EMA, Death when it is below.</td></tr>
-                    <tr><td><b>📊 Bollinger Band</b> <span class="text-muted d-block" style="font-size:0.72rem;">15 min</span></td>
-                        <td>Up when price reaches the upper band (20 SMA plus two standard deviations).</td></tr>
-                    <tr><td><b>📉 RSI</b> <span class="text-muted d-block" style="font-size:0.72rem;">15 min</span></td>
-                        <td>Classic 14-period Relative Strength Index. Below 30 is oversold, above 70 overbought. The trend column compares it with the previous bar.</td></tr>
-                    <tr><td><b>🎯 DMI / ADX</b> <span class="text-muted d-block" style="font-size:0.72rem;">15 min</span></td>
-                        <td>14-period directional movement. DMI is bullish while +DI leads −DI; ADX above 25 means the trend has real strength.</td></tr>
-                    <tr><td><b>Score</b> <span class="text-muted d-block" style="font-size:0.72rem;">Screener</span></td>
-                        <td>Bullish signals minus bearish ones across seven indicators, so it ranges from −7 to +7. Used to sort the screener.</td></tr>
-                </tbody>
-            </table>
+        <div class="panel">
+            <div class="panel-head"><h2 class="panel-title">About the project</h2></div>
+            <div class="panel-body">
+                <p>Ultimate Pro Trading Terminal is a personal market analytics dashboard for Indian markets.
+                   It pulls delayed price history for Nifty 50, Bank Nifty, Fin Nifty, MCX commodities and key
+                   indices, computes a standard set of technical indicators, and presents them as one consistent
+                   view instead of ten separate chart tabs.</p>
+                <p class="mb-0">It is a learning and research project, not a trading system. Nothing here places
+                   orders, connects to a broker or promises an outcome.</p>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-head"><h2 class="panel-title">What each indicator measures</h2></div>
+            <div class="panel-body">
+                <table class="about-table">
+                    <tbody>
+                        <tr><td>Big Candle <span class="ind-tf d-block">15M</span></td>
+                            <td>Flags a bar whose high-to-low range is at least 1.5× the average of the last 10 bars.
+                                Bullish when it closed above its open.</td></tr>
+                        <tr><td>MACD <span class="ind-tf d-block">1H</span></td>
+                            <td>Difference between the 12 and 26 period EMAs, compared with its own 9 period signal line.
+                                Bullish while MACD sits above the signal.</td></tr>
+                        <tr><td>DOW Breakout <span class="ind-tf d-block">15M</span></td>
+                            <td>BUY when price clears the highest high of the previous six bars; SELL when it breaks the lowest low.</td></tr>
+                        <tr><td>EMA Crossover <span class="ind-tf d-block">5M</span></td>
+                            <td>Golden while the 20 EMA is above the 50 EMA, Death when it is below.</td></tr>
+                        <tr><td>Bollinger Band <span class="ind-tf d-block">15M</span></td>
+                            <td>Up when price reaches the upper band, being the 20 SMA plus two standard deviations.</td></tr>
+                        <tr><td>RSI <span class="ind-tf d-block">15M</span></td>
+                            <td>14 period Relative Strength Index. Below 30 is oversold, above 70 overbought.
+                                The trend column compares it with the previous bar.</td></tr>
+                        <tr><td>DMI / ADX <span class="ind-tf d-block">15M</span></td>
+                            <td>14 period directional movement. DMI is bullish while +DI leads −DI; ADX above 25
+                                suggests the move has real strength behind it.</td></tr>
+                        <tr><td>Signal Score</td>
+                            <td>Bullish signals minus bearish ones across seven indicators, so it runs from −7 to +7.
+                                It is a summary of the columns you can already see, not a separate strategy.</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    <span class="score-pill score-strong-bull">+4 and above · STRONG BULLISH</span>
+                    <span class="score-pill score-bull">+1 to +3 · BULLISH</span>
+                    <span class="score-pill score-neutral">0 · NEUTRAL</span>
+                    <span class="score-pill score-bear">−1 to −3 · BEARISH</span>
+                    <span class="score-pill score-strong-bear">−4 and below · STRONG BEARISH</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-head"><h2 class="panel-title">Architecture</h2></div>
+            <div class="panel-body">
+                <p>The obvious approach — one API call per symbol per timeframe — is over 250 sequential network
+                   requests per page load. That times out on any cloud host and gets rate limited.</p>
+                <ol class="mb-3" style="padding-left: 18px;">
+                    <li>A background thread wakes every <b>{{ refresh_seconds }} seconds</b>.</li>
+                    <li>It issues <b>one batched download per timeframe</b> (5M, 15M, 1H, 1D) covering all
+                        <b>{{ universe }}</b> symbols — four requests per cycle, not hundreds per visitor.</li>
+                    <li>Indicators are computed once and stored in an in-memory snapshot of plain values.</li>
+                    <li>Every page and API reads that snapshot, so requests answer in milliseconds and can
+                        never block on the data provider.</li>
+                </ol>
+                <p class="mb-0">If a timeframe is throttled, indicators fall back to daily bars so cells degrade
+                   instead of going blank. If a whole refresh fails, the last good snapshot stays on screen and
+                   is clearly marked <b>stale</b> rather than being wiped.</p>
+            </div>
         </div>
     </div>
 
     <div class="col-lg-5">
-        <div class="card p-4 shadow-sm">
-            <h5 class="fw-bold text-info">Pages</h5>
-            <p class="mb-2"><b>Dashboard</b> — every tracked segment as a live table, plus a single-stock scan panel, watchlist and option calculator.</p>
-            <p class="mb-2"><b>Screener</b> — stack signal filters to shortlist setups, sort by strength, export the result.</p>
-            <p class="mb-0"><b>Heatmap</b> — the whole universe as coloured tiles, by daily move, signal score or RSI.</p>
+        <div class="panel">
+            <div class="panel-head"><h2 class="panel-title">Pages</h2></div>
+            <div class="panel-body">
+                <table class="about-table">
+                    <tbody>
+                        <tr><td>Dashboard</td><td>Index cards, market breadth, strongest setups, watchlist and every segment table.</td></tr>
+                        <tr><td>Screener</td><td>Filter by signal bias, sort by score, RSI, ADX or price, export CSV.</td></tr>
+                        <tr><td>Heatmap</td><td>The universe as coloured tiles by daily move, score or RSI.</td></tr>
+                        <tr><td>Stock Analysis</td><td>One symbol in depth: indicator grid, per-timeframe levels, technical summary.</td></tr>
+                        <tr><td>Watchlist</td><td>Your saved symbols, priced from the same snapshot.</td></tr>
+                        <tr><td>Markets</td><td>All segments plus currencies as card grids.</td></tr>
+                        <tr><td>Options Lab</td><td>Analytical strike ladder and a validated P&amp;L calculator.</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="card p-4 shadow-sm">
-            <h5 class="fw-bold text-info">How the data works</h5>
-            <p class="mb-2">Prices come from Yahoo Finance and are <b>delayed</b>, not a live exchange feed.</p>
-            <p class="mb-2">A background job refreshes all <b>{{ universe }}</b> symbols every <b>{{ refresh_seconds }} seconds</b> in one batch and caches the result, so pages load instantly and never wait on the data provider.</p>
-            <p class="mb-0">The badge in the top bar shows how old the current numbers are.</p>
+        <div class="panel">
+            <div class="panel-head"><h2 class="panel-title">Technology stack</h2></div>
+            <div class="panel-body">
+                <div><span class="tech-chip">Python</span><span class="tech-chip">Flask</span>
+                     <span class="tech-chip">yfinance</span><span class="tech-chip">Pandas</span>
+                     <span class="tech-chip">NumPy</span><span class="tech-chip">JavaScript</span>
+                     <span class="tech-chip">Bootstrap</span><span class="tech-chip">Gunicorn</span>
+                     <span class="tech-chip">Docker</span><span class="tech-chip">Gemini</span></div>
+                <p class="text-muted mt-3 mb-0" style="font-size:.78rem;">
+                    No frontend build step and no chart library — the pages are plain templates, CSS and
+                    vanilla JavaScript so the whole project stays readable.</p>
+            </div>
         </div>
 
-        <div class="card p-4 shadow-sm">
-            <h5 class="fw-bold text-warning">Disclaimer</h5>
-            <p class="mb-0 small">This dashboard is for education and research. It is not investment advice, not a recommendation to buy or sell, and the option calculator uses estimated premiums rather than real chain quotes. Verify everything with your broker before trading.</p>
+        <div class="panel">
+            <div class="panel-head"><h2 class="panel-title">Data engine</h2></div>
+            <div class="panel-body">
+                <div class="summary-row"><span class="summary-key">Source</span><span class="summary-val">Yahoo Finance (delayed)</span></div>
+                <div class="summary-row"><span class="summary-key">Universe</span><span class="summary-val">{{ universe }} symbols</span></div>
+                <div class="summary-row"><span class="summary-key">Nifty 50 constituents</span><span class="summary-val">{{ nifty_count }}</span></div>
+                <div class="summary-row"><span class="summary-key">Refresh interval</span><span class="summary-val">{{ refresh_seconds }}s</span></div>
+                <div class="summary-row"><span class="summary-key">Requests per cycle</span><span class="summary-val">4 batched</span></div>
+                <div class="summary-row"><span class="summary-key">Health endpoint</span><span class="summary-val"><a href="/healthz">/healthz</a></span></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-head"><h2 class="panel-title">Security</h2></div>
+            <div class="panel-body">
+                <ul class="mb-0" style="padding-left: 18px;">
+                    <li>No secrets in the source — the Gemini key comes only from <code>GEMINI_API_KEY</code>.</li>
+                    <li>Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
+                        and Permissions-Policy on every response.</li>
+                    <li>Symbols are validated against a strict pattern before touching the data layer.</li>
+                    <li>All dynamic text is escaped before it reaches the DOM.</li>
+                    <li>Errors are logged server-side; visitors never see a stack trace.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-head"><h2 class="panel-title text-warning">Disclaimer</h2></div>
+            <div class="panel-body">
+                <p class="mb-0" style="font-size:.84rem;">This dashboard is for education and research only.
+                   It is <b>not</b> investment advice and makes no claim of accuracy or profitability. Prices are
+                   delayed. Option premiums are analytical estimates, not exchange quotes. Verify everything with
+                   your broker before making any trading decision.</p>
+            </div>
         </div>
     </div>
 </div>

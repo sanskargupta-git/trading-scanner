@@ -1,0 +1,72 @@
+===============================================================
+  ULTIMATE PRO TRADING TERMINAL
+===============================================================
+
+Project      : Ultimate Pro Trading Terminal
+Version      : v4.0-terminal
+Purpose      : Personal trading analytics / education
+
+---------------------------------------------------------------
+WHAT IT IS
+---------------------------------------------------------------
+A personal market analytics dashboard for Indian markets. It
+pulls delayed price history from Yahoo Finance for Nifty 50,
+Bank Nifty, Fin Nifty, MCX commodities and key indices, computes
+a standard set of technical indicators, and presents them as one
+consistent terminal-style view.
+
+Coverage     : 68 symbols (50 Nifty 50 + Bank Nifty + Fin Nifty
+               + 8 commodities + indices)
+Indicators   : Big Candle, MACD, DOW Breakout, EMA Crossover,
+               Bollinger Band, RSI, RSI Trend, DMI, ADX,
+               ADX Trend, plus a -7..+7 Signal Score
+Pages        : Dashboard, Screener, Heatmap, Stock Analysis,
+               Watchlist, Markets, Options Lab, About
+
+---------------------------------------------------------------
+TECH STACK
+---------------------------------------------------------------
+Backend      : Python 3, Flask, Gunicorn
+Market data  : yfinance (Yahoo Finance)
+Computation  : Pandas, NumPy
+Frontend     : Vanilla JavaScript, Bootstrap 5, custom CSS
+AI assistant : Google Gemini (optional)
+Deployment   : Docker, Railway
+
+---------------------------------------------------------------
+HOW TO RUN
+---------------------------------------------------------------
+1. Install Python 3.9 or newer
+2. pip install -r requirements.txt
+3. python trading_scanner.py
+4. Open http://localhost:5000
+
+Windows shortcut: double-click START.bat
+
+The first load takes 10-15 seconds while the background worker
+fetches its first snapshot. See README.md for full setup.
+
+---------------------------------------------------------------
+CONFIGURATION (all optional)
+---------------------------------------------------------------
+PORT             default 5000
+REFRESH_SECONDS  default 90
+GEMINI_API_KEY   unset - assistant disabled, rest works fine
+
+No secrets are stored in this source tree. Copy .env.example to
+.env for local configuration.
+
+---------------------------------------------------------------
+DISCLAIMER
+---------------------------------------------------------------
+For education and research only. This is NOT investment advice
+and makes no claim of accuracy or profitability.
+
+Prices are delayed Yahoo Finance data, not a live exchange feed.
+Option premiums are analytical estimates derived from spot price
+and strike distance, NOT real exchange option-chain quotes.
+
+Verify everything with your broker before making any trading
+decision. All trading risk is your own.
+
+===============================================================

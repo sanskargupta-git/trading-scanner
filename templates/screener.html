@@ -1,107 +1,89 @@
 {% extends "base.html" %}
-{% block title %}Screener · Ultimate Pro Trading Scanner{% endblock %}
+{% block title %}Screener · Pro Trading Terminal{% endblock %}
 
 {% block content %}
-<div class="text-center mb-3">
-    <h2 class="fw-bold text-info">SIGNAL SCREENER</h2>
-    <p class="text-muted small">Stack filters to find setups. Everything updates with the live scan.</p>
+<div class="page-head">
+    <h1 class="page-title">SIGNAL SCREENER</h1>
+    <p class="page-sub">Filter and rank the scanned universe by signal bias, momentum and trend strength.</p>
 </div>
 
-<div class="card p-3 shadow-sm">
-    <div class="row g-3">
-        <div class="col-md-3">
-            <div class="filter-group-title">Universe</div>
-            <select id="universeSelect" class="form-select form-select-sm" onchange="loadStocks()">
-                <option value="nifty50">Nifty 50</option>
-                <option value="banknifty">Bank Nifty</option>
-                <option value="finnifty">Fin Nifty</option>
-                <option value="commodities">Commodities</option>
-                <option value="giftnifty">Gift Nifty</option>
-                <option value="all">Everything</option>
-            </select>
-
-            <div class="filter-group-title mt-3">Sort by</div>
-            <select id="sortSelect" class="form-select form-select-sm" onchange="applyFilters()">
-                <option value="score">Signal strength</option>
-                <option value="pct_desc">Top gainers</option>
-                <option value="pct_asc">Top losers</option>
-                <option value="rsi_asc">RSI low to high</option>
-                <option value="rsi_desc">RSI high to low</option>
-                <option value="symbol">Symbol A–Z</option>
-            </select>
-
-            <div class="filter-group-title mt-3">Match</div>
-            <select id="matchSelect" class="form-select form-select-sm" onchange="applyFilters()">
-                <option value="all">All selected filters</option>
-                <option value="any">Any selected filter</option>
-            </select>
+<div class="panel">
+    <div class="panel-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-6 col-lg-2">
+                <label class="field-label" for="universeSelect">Universe</label>
+                <select id="universeSelect" class="form-select form-select-sm" onchange="loadStocks()">
+                    <option value="nifty50">Nifty 50</option>
+                    <option value="banknifty">Bank Nifty</option>
+                    <option value="finnifty">Fin Nifty</option>
+                    <option value="commodities">Commodities</option>
+                    <option value="giftnifty">Gift Nifty</option>
+                    <option value="all">Everything</option>
+                </select>
+            </div>
+            <div class="col-6 col-lg-2">
+                <label class="field-label" for="sortSelect">Sort by</label>
+                <select id="sortSelect" class="form-select form-select-sm" onchange="render()">
+                    <option value="score">Signal Score</option>
+                    <option value="pct">Daily %</option>
+                    <option value="rsi">RSI</option>
+                    <option value="adx">ADX</option>
+                    <option value="price">Price</option>
+                    <option value="symbol">Symbol A–Z</option>
+                </select>
+            </div>
+            <div class="col-6 col-lg-2">
+                <label class="field-label" for="sortDir">Order</label>
+                <select id="sortDir" class="form-select form-select-sm" onchange="render()">
+                    <option value="desc">High → Low</option>
+                    <option value="asc">Low → High</option>
+                </select>
+            </div>
+            <div class="col-6 col-lg-3">
+                <label class="field-label" for="symbolSearch">Search</label>
+                <input type="text" id="symbolSearch" class="form-control form-control-sm"
+                       placeholder="e.g. RELI" oninput="render()" aria-label="Search symbols">
+            </div>
+            <div class="col-12 col-lg-3 d-flex gap-2 justify-content-lg-end">
+                <button class="pill" onclick="downloadResults()">⬇ Export CSV</button>
+                <button class="pill" onclick="resetAll()">✕ Reset</button>
+            </div>
         </div>
 
-        <div class="col-md-9">
-            <div class="filter-group-title">Bullish signals</div>
-            <div class="d-flex flex-wrap gap-2 mb-3">
-                <label class="filter-chip"><input type="checkbox" data-f="macd_bull" onchange="applyFilters()">⚡ MACD Bullish</label>
-                <label class="filter-chip"><input type="checkbox" data-f="dow_buy" onchange="applyFilters()">📈 DOW BUY</label>
-                <label class="filter-chip"><input type="checkbox" data-f="ema_golden" onchange="applyFilters()">⚔️ Golden Cross</label>
-                <label class="filter-chip"><input type="checkbox" data-f="bb_up" onchange="applyFilters()">📊 Bollinger Up</label>
-                <label class="filter-chip"><input type="checkbox" data-f="dmi_bull" onchange="applyFilters()">🎯 DMI Bullish</label>
-                <label class="filter-chip"><input type="checkbox" data-f="candle_bull" onchange="applyFilters()">🔥 Big Bull Candle</label>
-                <label class="filter-chip"><input type="checkbox" data-f="rsi_oversold" onchange="applyFilters()">📉 RSI &lt; 30</label>
-            </div>
+        <hr style="border-color: var(--border-soft); margin: 16px 0 13px;">
 
-            <div class="filter-group-title">Bearish signals</div>
-            <div class="d-flex flex-wrap gap-2 mb-3">
-                <label class="filter-chip"><input type="checkbox" data-f="macd_bear" onchange="applyFilters()">⚡ MACD Bearish</label>
-                <label class="filter-chip"><input type="checkbox" data-f="dow_sell" onchange="applyFilters()">📉 DOW SELL</label>
-                <label class="filter-chip"><input type="checkbox" data-f="ema_death" onchange="applyFilters()">⚔️ Death Cross</label>
-                <label class="filter-chip"><input type="checkbox" data-f="bb_down" onchange="applyFilters()">📊 Bollinger Down</label>
-                <label class="filter-chip"><input type="checkbox" data-f="dmi_bear" onchange="applyFilters()">🎯 DMI Bearish</label>
-                <label class="filter-chip"><input type="checkbox" data-f="candle_bear" onchange="applyFilters()">🔥 Big Bear Candle</label>
-                <label class="filter-chip"><input type="checkbox" data-f="rsi_overbought" onchange="applyFilters()">📈 RSI &gt; 70</label>
-            </div>
-
-            <div class="filter-group-title">Trend quality</div>
-            <div class="d-flex flex-wrap gap-2">
-                <label class="filter-chip"><input type="checkbox" data-f="adx_strong" onchange="applyFilters()">🎯 ADX &gt; 25 (strong trend)</label>
-                <label class="filter-chip"><input type="checkbox" data-f="up_today" onchange="applyFilters()">🟢 Up today</label>
-                <label class="filter-chip"><input type="checkbox" data-f="down_today" onchange="applyFilters()">🔴 Down today</label>
-                <button class="broker-btn" onclick="clearFilters()">✕ Clear all</button>
-            </div>
+        <div class="filter-group-title">Signal bias</div>
+        <div class="d-flex flex-wrap gap-2" id="biasFilters">
+            <button class="pill active" data-bias="all" onclick="setBias(this)">All</button>
+            <button class="pill" data-bias="strong-bull" onclick="setBias(this)">Strong Bullish</button>
+            <button class="pill" data-bias="bull" onclick="setBias(this)">Bullish</button>
+            <button class="pill" data-bias="neutral" onclick="setBias(this)">Neutral</button>
+            <button class="pill" data-bias="bear" onclick="setBias(this)">Bearish</button>
+            <button class="pill" data-bias="strong-bear" onclick="setBias(this)">Strong Bearish</button>
         </div>
     </div>
 </div>
 
-<div class="card p-3 shadow-sm">
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <h5 class="fw-bold text-info mb-0">Results <span id="resultCount" class="result-count"></span></h5>
-        <div class="d-flex gap-2 align-items-center">
-            <input type="text" class="form-control form-control-sm" id="symbolSearch" style="max-width: 180px;"
-                   placeholder="Search symbol…" oninput="applyFilters()">
-            <button class="broker-btn" onclick="downloadResults()">⬇ CSV</button>
-        </div>
+<div class="panel">
+    <div class="panel-head">
+        <h2 class="panel-title">Results <span class="sub" id="resultCount"></span></h2>
     </div>
-
-    <div class="master-table-wrapper" id="screenerWrapper">
-        <table class="master-table">
-            <thead>
-                <tr>
-                    <th class="symbol-th" style="vertical-align: middle;">Stock</th>
-                    <th>Score</th>
-                    <th>🔥 Big Candle</th>
-                    <th>⚡ MACD</th>
-                    <th>📈 DOW</th>
-                    <th>⚔️ EMA</th>
-                    <th>📊 Bollinger</th>
-                    <th>📉 RSI</th>
-                    <th>🎯 DMI</th>
-                    <th>🎯 ADX</th>
-                    <th>📊 Chart</th>
-                </tr>
-            </thead>
-            <tbody id="screenerBody">
-                <tr><td colspan="11" class="text-center text-muted loading-cell">Loading live scan <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span></td></tr>
-            </tbody>
-        </table>
+    <div class="panel-body flush">
+        <div class="table-wrap">
+            <table class="master-table">
+                <thead>
+                    <tr>
+                        <th class="symbol-th">Symbol</th>
+                        <th>Score</th><th>Big Candle</th><th>MACD</th><th>DOW</th><th>EMA</th>
+                        <th>Bollinger</th><th>RSI</th><th>RSI Trend</th><th>DMI</th>
+                        <th>ADX</th><th>ADX Trend</th><th>Hourly Trend</th><th>Chart</th>
+                    </tr>
+                </thead>
+                <tbody id="screenerBody">
+                    <tr><td colspan="14" class="loading-cell">Loading live scan <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span></td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

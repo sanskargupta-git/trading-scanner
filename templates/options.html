@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Options Lab · Pro Trading Terminal{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <h1 class="page-title">OPTIONS LAB</h1>
+    <p class="page-sub">Position-sizing and P&amp;L workspace built on the live spot price.</p>
+</div>
+
+<div class="estimate-note mb-3">
+    ⚠ ESTIMATED / ANALYTICAL — premiums below are derived from spot price and strike distance.
+    They are <b>not</b> live exchange option-chain quotes. Always confirm with your broker before trading.
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="panel">
+            <div class="panel-head"><h2 class="panel-title">Underlying</h2></div>
+            <div class="panel-body">
+                <label class="field-label" for="underlying">Symbol</label>
+                <div class="d-flex gap-2">
+                    <input type="text" id="underlying" class="form-control form-control-sm" list="symbolList"
+                           value="RELIANCE" placeholder="RELIANCE"
+                           onkeypress="if(event.key==='Enter')loadUnderlying()" aria-label="Underlying symbol">
+                    <button class="btn btn-primary btn-sm" onclick="loadUnderlying()">Load</button>
+                </div>
+                <datalist id="symbolList">
+                    {% for s in symbols %}<option value="{{ s }}"></option>{% endfor %}
+                </datalist>
+                <div class="field-error" id="underlyingError"></div>
+
+                <div class="stat-grid mt-3">
+                    <div class="stat-tile"><div class="stat-label">Spot Price</div>
+                        <div class="stat-value mono" id="spotPrice">--</div>
+                        <div class="stat-note" id="spotChange">--</div></div>
+                    <div class="stat-tile"><div class="stat-label">Lot Size</div>
+                        <div class="stat-value mono" id="lotSizeView">--</div>
+                        <div class="stat-note">contract multiplier</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-head">
+                <h2 class="panel-title">Strike Ladder <span class="sub">estimated</span></h2>
+            </div>
+            <div class="panel-body flush">
+                <div id="chainBox" style="max-height:280px; overflow-y:auto;">
+                    <div class="loading-cell">Load an underlying to build the ladder.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="panel">
+            <div class="panel-head"><h2 class="panel-title">Position &amp; P&amp;L</h2></div>
+            <div class="panel-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="field-label" for="contractName">Contract</label>
+                        <input type="text" id="contractName" class="form-control form-control-sm"
+                               readonly placeholder="Pick a strike from the ladder" aria-label="Selected contract">
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <label class="field-label" for="side">Side</label>
+                        <select id="side" class="form-select form-select-sm" onchange="calculate()">
+                            <option value="BUY">Buyer (Long)</option>
+                            <option value="SELL">Seller (Short)</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <label class="field-label" for="lotSize">Lot Size</label>
+                        <input type="number" id="lotSize" class="form-control form-control-sm" min="1" step="1"
+                               value="250" oninput="calculate()">
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <label class="field-label" for="qtyLots">Quantity (lots)</label>
+                        <input type="number" id="qtyLots" class="form-control form-control-sm" min="1" step="1"
+                               value="1" oninput="calculate()">
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <label class="field-label" for="entryPrice">Entry Premium ₹</label>
+                        <input type="number" id="entryPrice" class="form-control form-control-sm" min="0" step="0.05"
+                               placeholder="0.00" oninput="calculate()">
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <label class="field-label" for="exitPrice">Exit Premium ₹</label>
+                        <input type="number" id="exitPrice" class="form-control form-control-sm" min="0" step="0.05"
+                               placeholder="0.00" oninput="calculate()">
+                    </div>
+                    <div class="col-12 col-md-4 d-flex align-items-end">
+                        <button class="btn btn-primary btn-sm w-100" onclick="calculate()">Calculate</button>
+                    </div>
+                </div>
+
+                <div class="field-error" id="calcError"></div>
+
+                <div class="stat-grid mt-3">
+                    <div class="stat-tile"><div class="stat-label">Total Quantity</div>
+                        <div class="stat-value mono" id="totalQty">--</div>
+                        <div class="stat-note">lots × lot size</div></div>
+                    <div class="stat-tile"><div class="stat-label">Capital Outlay</div>
+                        <div class="stat-value mono" id="capital">--</div>
+                        <div class="stat-note" id="capitalNote">premium × quantity</div></div>
+                    <div class="stat-tile"><div class="stat-label">Estimated P&amp;L</div>
+                        <div class="pnl-value mono" id="pnl">--</div></div>
+                    <div class="stat-tile"><div class="stat-label">P&amp;L %</div>
+                        <div class="stat-value mono" id="pnlPct">--</div>
+                        <div class="stat-note">on capital outlay</div></div>
+                </div>
+
+                <p class="text-muted mt-3 mb-0" style="font-size:.74rem;">
+                    P&amp;L excludes brokerage, STT, exchange fees, GST and stamp duty. For a short position the
+                    capital outlay column shows premium received, not the margin your broker will block.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>window.LOT_SIZES = {{ lot_sizes|tojson }};</script>
+<script src="{{ url_for('static', filename='js/options.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}{{ symbol }} · Stock Analysis{% endblock %}
+
+{% block content %}
+<div id="stockRoot" data-symbol="{{ symbol }}">
+
+    <div class="panel">
+        <div class="panel-body">
+            <div class="stock-hero">
+                <div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <h1 class="page-title mb-0" id="sName">{{ symbol }}</h1>
+                        <span id="sBand"></span>
+                        <span class="pill" id="sSource" hidden></span>
+                    </div>
+                    <div class="stock-price mono" id="sPrice">--</div>
+                    <div class="stock-change" id="sChange">--</div>
+                </div>
+                <div class="d-flex flex-column gap-2 align-items-end">
+                    <div class="tf-tabs" id="tfTabs" role="tablist" aria-label="Chart timeframe">
+                        {% for tf in ['5m', '15m', '1h', '1d'] %}
+                        <button class="pill {% if tf == '15m' %}active{% endif %}" data-tf="{{ tf }}"
+                                onclick="setTimeframe('{{ tf }}')" role="tab">{{ tf|upper }}</button>
+                        {% endfor %}
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a class="pill" id="tvLink" href="#" target="_blank" rel="noopener">Open TradingView ↗</a>
+                        <button class="pill" id="wlToggle" onclick="toggleWatch()">+ Watchlist</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="stockError" class="panel" hidden>
+        <div class="panel-body">
+            <div class="error-state" id="stockErrorText"></div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="panel">
+                <div class="panel-head">
+                    <h2 class="panel-title">Indicator Grid <span class="sub">timeframe shown on each cell</span></h2>
+                </div>
+                <div class="panel-body">
+                    <div class="ind-grid" id="indGrid"></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h2 class="panel-title">Timeframe Levels <span class="sub" id="tfLabel">15M</span></h2>
+                </div>
+                <div class="panel-body">
+                    <div class="stat-grid" id="levelGrid"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="panel">
+                <div class="panel-head">
+                    <h2 class="panel-title">Technical Summary</h2>
+                </div>
+                <div class="panel-body" id="summaryBox">
+                    <div class="loading-cell">Loading <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h2 class="panel-title">Data Status</h2>
+                </div>
+                <div class="panel-body" id="dataStatusBox"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/stock.js') }}"></script>
+{% endblock %}

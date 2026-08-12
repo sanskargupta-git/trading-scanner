@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Markets · Pro Trading Terminal{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <h1 class="page-title">MARKETS</h1>
+    <p class="page-sub">Every tracked segment in one place — indices, equities, commodities and currencies.</p>
+</div>
+
+<div class="panel">
+    <div class="panel-head"><h2 class="panel-title">Headline Indices</h2></div>
+    <div class="panel-body">
+        <div class="index-grid" id="indexGrid">
+            <div class="loading-cell" style="grid-column:1/-1">Loading <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span></div>
+        </div>
+    </div>
+</div>
+
+{% for key, label in [('nifty50','Nifty 50'), ('banknifty','Bank Nifty'), ('finnifty','Fin Nifty'),
+                      ('commodities','Commodities (MCX)'), ('giftnifty','Gift Nifty & Indices')] %}
+<div class="panel">
+    <div class="panel-head">
+        <h2 class="panel-title">{{ label }} <span class="sub" id="{{ key }}Sub"></span></h2>
+        <a class="pill" href="/export.csv?type={{ key }}">⬇ CSV</a>
+    </div>
+    <div class="panel-body">
+        <div class="mkt-grid" id="{{ key }}Grid">
+            <div class="loading-cell" style="grid-column:1/-1">Loading <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span></div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<div class="panel">
+    <div class="panel-head"><h2 class="panel-title">Currencies <span class="sub">USD base</span></h2></div>
+    <div class="panel-body">
+        <div class="mkt-grid" id="fxGrid"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/markets.js') }}"></script>
+{% endblock %}

@@ -1,23 +1,25 @@
 {% extends "base.html" %}
-{% block title %}Heatmap · Ultimate Pro Trading Scanner{% endblock %}
+{% block title %}Heatmap · Pro Trading Terminal{% endblock %}
 
 {% block content %}
-<div class="text-center mb-3">
-    <h2 class="fw-bold text-info">MARKET HEATMAP</h2>
-    <p class="text-muted small">The whole market in one glance. Tap any tile to open its chart.</p>
+<div class="page-head">
+    <h1 class="page-title">MARKET HEATMAP</h1>
+    <p class="page-sub">The whole universe at a glance. Every tile carries the live price, daily move and signal bias — click one to open its analysis.</p>
 </div>
 
-<div class="card p-3 shadow-sm">
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+<div class="panel">
+    <div class="panel-head">
         <div class="d-flex gap-2 align-items-center flex-wrap">
-            <select id="universeSelect" class="form-select form-select-sm" style="max-width: 170px;" onchange="loadHeatmap()">
+            <select id="universeSelect" class="form-select form-select-sm" style="max-width:170px"
+                    onchange="loadHeatmap()" aria-label="Choose universe">
                 <option value="nifty50">Nifty 50</option>
                 <option value="banknifty">Bank Nifty</option>
                 <option value="finnifty">Fin Nifty</option>
                 <option value="commodities">Commodities</option>
                 <option value="all">Everything</option>
             </select>
-            <select id="colourSelect" class="form-select form-select-sm" style="max-width: 190px;" onchange="renderHeatmap()">
+            <select id="colourSelect" class="form-select form-select-sm" style="max-width:190px"
+                    onchange="renderHeatmap()" aria-label="Choose colour metric">
                 <option value="pct">Colour by daily %</option>
                 <option value="score">Colour by signal score</option>
                 <option value="rsi">Colour by RSI</option>
@@ -25,11 +27,14 @@
         </div>
         <div class="legend-row" id="legendRow"></div>
     </div>
-
-    <div id="marketSummary" class="mb-3 text-muted" style="font-size: 0.82rem;"></div>
-
-    <div class="heat-grid" id="heatGrid">
-        <div class="text-muted loading-cell">Loading live prices <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span></div>
+    <div class="panel-body">
+        <div class="stat-grid mb-3" id="heatSummary"></div>
+        <div class="heat-grid" id="heatGrid">
+            <div class="loading-cell">Loading live prices <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span></div>
+        </div>
+        <p class="text-muted mt-3 mb-0" style="font-size:.74rem;">
+            Tiles use an equal grid ordered by daily move. Market-capitalisation weighting is not applied because that data is not part of this feed.
+        </p>
     </div>
 </div>
 {% endblock %}

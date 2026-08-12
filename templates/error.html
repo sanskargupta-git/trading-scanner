@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} · Pro Trading Terminal{% endblock %}
+
+{% block content %}
+<div class="panel" style="max-width: 620px; margin: 40px auto;">
+    <div class="panel-body">
+        <div class="empty-state">
+            <span class="big">{% if code == 404 %}🧭{% else %}⚠{% endif %}</span>
+            <h1 class="page-title mb-2">{{ code }} — {{ title }}</h1>
+            <p class="mb-4">{{ detail }}</p>
+            <a href="/" class="pill">← Back to Dashboard</a>
+            <a href="/screener" class="pill">Open Screener</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
